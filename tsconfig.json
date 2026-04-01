@@ -1,0 +1,24 @@
+{
+  "extends": "./.nuxt/tsconfig.json", // ระบุ Path ของไฟล์ code ของคุณ
+  "exclude": ["node_modules"],
+  "compilerOptions": {
+    "types": ["bun-types"],
+    /* Target & Lib */
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "lib": ["ESNext", "DOM", "DOM.Iterable"],
+
+    /* Strictness - สำคัญมากสำหรับไฟล์ Auth */
+    "strict": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+
+    /* Bun & Nuxt 4 Compatibility */
+    "allowImportingTsExtensions": true, // Bun รองรับการ import .ts ตรงๆ
+    "noEmit": true,
+    "moduleDetection": "force",
+    "isolatedModules": true,
+    "skipLibCheck": true
+  }
+}
