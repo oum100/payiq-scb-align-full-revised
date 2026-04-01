@@ -64,7 +64,7 @@ type JobDataWithMeta = {
   webhookEventId?: string;
   providerCallbackId?: string;
   paymentIntentId?: string;
-  providerCallbackId?: string;
+  // providerCallbackId?: string;
   webhookDeliveryId?: string;
 };
 
