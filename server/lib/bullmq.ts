@@ -6,6 +6,7 @@ export const queueNames = {
   webhook: "payiq-webhook",
   webhookInbound: "payiq-webhook-inbound",
   reconcile: "payiq-reconcile",
+  reconcileScheduler: "payiq-reconcile-scheduler",
 } as const;
 
 export const callbackQueue = new Queue(queueNames.callback, {
@@ -21,5 +22,9 @@ export const webhookInboundQueue = new Queue(queueNames.webhookInbound, {
 });
 
 export const reconcileQueue = new Queue(queueNames.reconcile, {
+  connection: redis,
+});
+
+export const reconcileSchedulerQueue = new Queue(queueNames.reconcileScheduler, {
   connection: redis,
 });

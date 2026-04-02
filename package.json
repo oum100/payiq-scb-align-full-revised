@@ -20,7 +20,8 @@
     "typecheck": "nuxt typecheck",
     "lint": "eslint .",
     "check": "bun run lint && bun run typecheck",
-    "reconcile:pending": "bun run scripts/reconcile-pending.ts"
+    "reconcile:pending": "bun run scripts/reconcile-pending.ts",
+    "reconcile:scheduler": "bun run server/tasks/reconcileScheduler.ts"
   },
   "dependencies": {
     "@opentelemetry/api": "^1.9.0",

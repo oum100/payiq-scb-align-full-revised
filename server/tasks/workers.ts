@@ -1,6 +1,6 @@
 import { Job, Queue, QueueEvents, Worker } from "bullmq";
 import { redis } from "~/server/lib/redis";
-import { queueNames } from "~/server/lib/bullmq";
+import { queueNames, reconcileSchedulerQueue } from "~/server/lib/bullmq";
 import { processProviderCallback } from "~/server/services/callbacks/processProviderCallback";
 import { deliverWebhook } from "~/server/services/webhooks/deliverWebhook";
 import { reconcilePayment } from "~/server/services/reconcile/reconcilePayment";
@@ -8,6 +8,7 @@ import { handleWebhookInboundJob } from "~/server/services/webhooks/handleWebhoo
 import { logger } from "~/server/lib/logger";
 import { runWithRequestContext } from "~/server/lib/request-context";
 import { NonRetryableJobError } from "~/server/tasks/job-errors";
+import { enqueueReconcileCandidates } from "~/server/services/reconcile/enqueueReconcileCandidates";
 
 type QueuePolicy = {
   queueName: string;
@@ -46,6 +47,13 @@ const QUEUE_POLICIES = {
     backoffDelayMs: 5000,
     concurrency: 10,
   },
+  reconcileScheduler: {
+    queueName: queueNames.reconcileScheduler,
+    jobName: "payment.reconcile.scan",
+    attempts: 1,
+    backoffDelayMs: 1000,
+    concurrency: 1,
+  },
 } as const satisfies Record<string, QueuePolicy>;
 
 type JobMeta = {
@@ -64,7 +72,6 @@ type JobDataWithMeta = {
   webhookEventId?: string;
   providerCallbackId?: string;
   paymentIntentId?: string;
-  // providerCallbackId?: string;
   webhookDeliveryId?: string;
 };
 
@@ -155,6 +162,10 @@ const webhookInboundDlq = new Queue(`${queueNames.webhookInbound}-dlq`, {
 });
 
 const reconcileDlq = new Queue(`${queueNames.reconcile}-dlq`, {
+  connection: redis,
+});
+
+const reconcileSchedulerDlq = new Queue(`${queueNames.reconcileScheduler}-dlq`, {
   connection: redis,
 });
 
@@ -409,6 +420,62 @@ buildWorker({
   },
 });
 
+buildWorker({
+  queueName: QUEUE_POLICIES.reconcileScheduler.queueName,
+  jobName: QUEUE_POLICIES.reconcileScheduler.jobName,
+  concurrency: QUEUE_POLICIES.reconcileScheduler.concurrency,
+  dlq: reconcileSchedulerDlq,
+  processor: async () => {
+    const result = await enqueueReconcileCandidates();
+
+    logger.info(
+      {
+        event: "reconcile.scheduler.scan_completed",
+        queue: QUEUE_POLICIES.reconcileScheduler.queueName,
+        candidates: result.candidates,
+        enqueued: result.enqueued,
+      },
+      "reconcile.scheduler.scan_completed",
+    );
+  },
+});
+
+async function ensureRepeatableJobs() {
+  await reconcileSchedulerQueue.add(
+    QUEUE_POLICIES.reconcileScheduler.jobName,
+    {},
+    {
+      jobId: "payment-reconcile-scan",
+      repeat: {
+        every: 60_000,
+      },
+      removeOnComplete: 1000,
+      removeOnFail: 1000,
+    },
+  );
+
+  logger.info(
+    {
+      event: "scheduler.registered",
+      queue: QUEUE_POLICIES.reconcileScheduler.queueName,
+      jobName: QUEUE_POLICIES.reconcileScheduler.jobName,
+      everyMs: 60_000,
+    },
+    "scheduler.registered",
+  );
+}
+
+void ensureRepeatableJobs().catch((error) => {
+  logger.error(
+    {
+      event: "scheduler.registration_failed",
+      queue: QUEUE_POLICIES.reconcileScheduler.queueName,
+      error: serializeError(error),
+    },
+    "scheduler.registration_failed",
+  );
+});
+
 logger.info(
   {
     event: "workers.started",
@@ -417,6 +484,7 @@ logger.info(
       merchantWebhook: QUEUE_POLICIES.merchantWebhook.queueName,
       webhookInbound: QUEUE_POLICIES.webhookInbound.queueName,
       reconcile: QUEUE_POLICIES.reconcile.queueName,
+      reconcileScheduler: QUEUE_POLICIES.reconcileScheduler.queueName,
     },
   },
   "Workers started",
