@@ -1,5 +1,7 @@
 export default defineNuxtConfig({
   compatibilityDate: "2026-03-18",
+  devtools: { enabled: true },
+
   modules: [],
   runtimeConfig: {
     databaseUrl: process.env.DATABASE_URL || "",
