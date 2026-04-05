@@ -9,7 +9,7 @@ import {
   webhookDeliveryQueue,
   webhookInboundDlqQueue,
   webhookInboundQueue,
-} from "~/server/tasks/queues";
+} from "~~/server/tasks/queues";
 
 type QueueLike = {
   name: string;

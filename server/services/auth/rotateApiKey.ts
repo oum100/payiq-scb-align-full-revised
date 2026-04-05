@@ -1,5 +1,5 @@
-import { prisma } from "~/server/lib/prisma";
-import { AppError } from "~/server/lib/errors";
+import { prisma } from "~~/server/lib/prisma";
+import { AppError } from "~~/server/lib/errors";
 import { revokeApiKey } from "./revokeApiKey";
 import { createApiKey } from "./createApiKey";
 

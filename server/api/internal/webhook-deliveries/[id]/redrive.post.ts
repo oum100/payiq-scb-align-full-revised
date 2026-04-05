@@ -1,7 +1,7 @@
 import { createError, defineEventHandler } from "h3";
 import { Prisma } from "@prisma/client";
-import { prisma } from "~/server/lib/prisma";
-import { webhookQueue } from "~/server/lib/bullmq";
+import { prisma } from "~~/server/lib/prisma";
+import { webhookQueue } from "~~/server/lib/bullmq";
 
 export default defineEventHandler(async (event) => {
   const id = String(event.context.params?.id || "").trim();
@@ -49,8 +49,8 @@ export default defineEventHandler(async (event) => {
       lastErrorAt: null,
       errorMessage: null,
       responseStatusCode: null,
-      responseHeaders: null,
-      responseBody: null,
+      responseHeaders: Prisma.JsonNull,
+      responseBody: Prisma.JsonNull,
       deliveredAt: null,
       attemptNumber: resetAttemptNumber,
     },

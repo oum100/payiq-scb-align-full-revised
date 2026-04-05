@@ -1,4 +1,4 @@
-import { hmacSha256 } from "~/server/lib/crypto"
+import { hmacSha256 } from "~~/server/lib/crypto"
 
 export const PAYIQ_WEBHOOK_SIGNATURE_VERSION = "v1"
 

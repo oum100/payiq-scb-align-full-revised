@@ -1,5 +1,5 @@
-import { prisma } from "~/server/lib/prisma"
-import { AppError } from "~/server/lib/errors"
+import { prisma } from "~~/server/lib/prisma"
+import { AppError } from "~~/server/lib/errors"
 
 export async function resolvePaymentRoute(params: {
   tenantId: string

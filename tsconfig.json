@@ -2,7 +2,6 @@
   "extends": "./.nuxt/tsconfig.json", // ระบุ Path ของไฟล์ code ของคุณ
   "exclude": ["node_modules"],
   "compilerOptions": {
-    "types": ["bun-types"],
     /* Target & Lib */
     "target": "ESNext",
     "module": "ESNext",

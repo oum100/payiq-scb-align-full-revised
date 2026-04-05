@@ -1,8 +1,8 @@
 import { createHash } from "node:crypto";
 import { Prisma } from "@prisma/client";
 import type { H3Event } from "h3";
-import { prisma } from "~/server/lib/prisma";
-import { AppError } from "~/server/lib/errors";
+import { prisma } from "~~/server/lib/prisma";
+import { AppError } from "~~/server/lib/errors";
 
 const DEFAULT_TTL_MS = 24 * 60 * 60 * 1000;
 const DEFAULT_LOCK_TIMEOUT_MS = 30 * 1000;

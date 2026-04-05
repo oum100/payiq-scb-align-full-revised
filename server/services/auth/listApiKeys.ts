@@ -1,4 +1,4 @@
-import { prisma } from "~/server/lib/prisma"
+import { prisma } from "~~/server/lib/prisma"
 
 export async function listApiKeys(params: {
   tenantId: string

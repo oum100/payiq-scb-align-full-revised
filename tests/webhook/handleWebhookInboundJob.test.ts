@@ -9,17 +9,17 @@ const prismaMock = {
 
 const processWebhookEventMock = mock();
 
-mock.module("~/server/lib/prisma", () => ({
+mock.module("../../server/lib/prisma", () => ({
   prisma: prismaMock,
 }));
 
-mock.module("~/server/services/webhooks/processWebhookEvent", () => ({
+mock.module("../../server/services/webhooks/processWebhookEvent", () => ({
   processWebhookEvent: processWebhookEventMock,
 }));
 
 const { handleWebhookInboundJob } =
-  await import("~/server/services/webhooks/handleWebhookInboundJob");
-const { NonRetryableJobError } = await import("~/server/tasks/job-errors");
+  await import("../../server/services/webhooks/handleWebhookInboundJob");
+const { NonRetryableJobError } = await import("../../server/tasks/job-errors");
 
 beforeEach(() => {
   prismaMock.providerCallback.findUnique.mockReset();

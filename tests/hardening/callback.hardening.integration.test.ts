@@ -19,7 +19,7 @@ describe("callback hardening", () => {
     }))
 
     const { processProviderCallback } = await import(
-      "~/server/services/callbacks/processProviderCallback"
+      "~~/server/services/callbacks/processProviderCallback"
     )
 
     const result = await processProviderCallback("pcb_1")
@@ -60,7 +60,7 @@ describe("callback hardening", () => {
     }))
 
     const { processProviderCallback } = await import(
-      "~/server/services/callbacks/processProviderCallback"
+      "~~/server/services/callbacks/processProviderCallback"
     )
 
     const result = await processProviderCallback("pcb_2")
@@ -118,7 +118,7 @@ describe("callback hardening", () => {
     }))
 
     const { processProviderCallback } = await import(
-      "~/server/services/callbacks/processProviderCallback"
+      "~~/server/services/callbacks/processProviderCallback"
     )
 
     const result = await processProviderCallback("pcb_3")

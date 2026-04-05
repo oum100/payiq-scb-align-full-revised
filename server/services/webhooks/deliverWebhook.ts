@@ -1,5 +1,5 @@
-import { prisma } from "~/server/lib/prisma";
-import { webhookQueue } from "~/server/lib/bullmq";
+import { prisma } from "~~/server/lib/prisma";
+import { webhookQueue } from "~~/server/lib/bullmq";
 import {
   buildWebhookHeaders,
   PAYIQ_WEBHOOK_SIGNATURE_VERSION,

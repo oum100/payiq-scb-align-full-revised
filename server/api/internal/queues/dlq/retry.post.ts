@@ -1,13 +1,13 @@
 import { createError, defineEventHandler, readBody } from "h3";
-import { prisma } from "~/server/lib/prisma";
-import { getEventRequestContext } from "~/server/lib/request-context";
+import { prisma } from "~~/server/lib/prisma";
+import { getEventRequestContext } from "~~/server/lib/request-context";
 import {
   providerCallbackQueue,
   reconcileQueue,
   webhookDeliveryQueue,
   webhookInboundQueue,
-} from "~/server/tasks/queues";
-import { QUEUE_POLICIES } from "~/server/tasks/queue-policy";
+} from "~~/server/tasks/queues";
+import { QUEUE_POLICIES } from "~~/server/tasks/queue-policy";
 
 type SupportedQueue =
   | "webhookInbound"
@@ -68,7 +68,10 @@ async function resolveProviderForPayload(
     return existingMeta.provider as string;
   }
 
-  if (queue === "webhookInbound" && (payload?.providerCallbackId || payload?.webhookEventId)) {
+  if (
+    queue === "webhookInbound" &&
+    (payload?.providerCallbackId || payload?.webhookEventId)
+  ) {
     const callbackId = payload?.providerCallbackId ?? payload?.webhookEventId;
     const record = await prisma.providerCallback.findUnique({
       where: { id: callbackId },
@@ -87,7 +90,10 @@ async function buildRedrivePayload(
   queue: SupportedQueue,
 ) {
   const existingMeta =
-    payload && typeof payload === "object" && payload.meta && typeof payload.meta === "object"
+    payload &&
+    typeof payload === "object" &&
+    payload.meta &&
+    typeof payload.meta === "object"
       ? payload.meta
       : {};
 
@@ -103,9 +109,7 @@ async function buildRedrivePayload(
       path: requestContext.path,
       route: requestContext.route,
       provider:
-        existingMeta.provider ??
-        resolvedProvider ??
-        requestContext.provider,
+        existingMeta.provider ?? resolvedProvider ?? requestContext.provider,
       tenantId: existingMeta.tenantId ?? requestContext.tenantId,
       apiKeyPrefix: existingMeta.apiKeyPrefix ?? requestContext.apiKeyPrefix,
       redriven: true,
@@ -145,20 +149,16 @@ export default defineEventHandler(async (event) => {
 
       const newJobId = `${body.queue}__redrive__${job.originalJobId}__${Date.now()}`;
 
-      await target.queue.add(
-        target.policy.jobName,
-        payload,
-        {
-          jobId: newJobId,
-          attempts: target.policy.attempts,
-          backoff: {
-            type: "exponential",
-            delay: target.policy.backoffDelayMs,
-          },
-          removeOnComplete: target.policy.removeOnComplete,
-          removeOnFail: target.policy.removeOnFail,
+      await target.queue.add(target.policy.jobName, payload, {
+        jobId: newJobId,
+        attempts: target.policy.attempts,
+        backoff: {
+          type: "exponential",
+          delay: target.policy.backoffDelayMs,
         },
-      );
+        removeOnComplete: target.policy.removeOnComplete,
+        removeOnFail: target.policy.removeOnFail,
+      });
 
       return {
         originalJobId: job.originalJobId,

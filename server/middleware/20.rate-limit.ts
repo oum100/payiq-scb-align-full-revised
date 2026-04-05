@@ -1,7 +1,7 @@
 import { defineEventHandler } from "h3"
-import { AppError } from "~/server/lib/errors"
-import { resolveRateLimitPolicies } from "~/server/lib/rate-limit/resolve"
-import { rateLimitService } from "~/server/lib/rate-limit/service"
+import { AppError } from "~~/server/lib/errors"
+import { resolveRateLimitPolicies } from "~~/server/lib/rate-limit/resolve"
+import { rateLimitService } from "~~/server/lib/rate-limit/service"
 
 export default defineEventHandler(async (event) => {
   const auth = event.context.auth

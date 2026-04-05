@@ -1,47 +1,47 @@
-import type { H3Event } from "h3"
-import { nanoid } from "nanoid"
-import { prisma } from "~/server/lib/prisma"
-import { AppError } from "~/server/lib/errors"
-import { applyPaymentTransition } from "~/server/services/payments/stateMachine"
-import type { AuthContext } from "~/server/types/auth"
+import type { H3Event } from "h3";
+import { nanoid } from "nanoid";
+import { prisma } from "~~/server/lib/prisma";
+import { AppError } from "~~/server/lib/errors";
+import { applyPaymentTransition } from "~~/server/services/payments/stateMachine";
+import type { AuthContext } from "~~/server/types/auth";
 import type {
   CreatePaymentIntentInput,
   CreatePaymentIntentResult,
-} from "~/server/types/payment"
+} from "~~/server/types/payment";
 import {
   completeIdempotency,
   releaseIdempotencyLock,
   reserveIdempotency,
-} from "../idempotency/reserveIdempotency"
-import { getProviderAdapter } from "../providers/registry"
-import { resolvePaymentRoute } from "../routing/resolvePaymentRoute"
+} from "../idempotency/reserveIdempotency";
+import { getProviderAdapter } from "../providers/registry";
+import { resolvePaymentRoute } from "../routing/resolvePaymentRoute";
 
 function stringifyAmount(value: unknown): string {
-  if (value === null || value === undefined) return "0"
-  if (typeof value === "string") return value
-  if (typeof value === "number") return String(value)
-  if (typeof value === "bigint") return value.toString()
+  if (value === null || value === undefined) return "0";
+  if (typeof value === "string") return value;
+  if (typeof value === "number") return String(value);
+  if (typeof value === "bigint") return value.toString();
   if (
     typeof value === "object" &&
     value !== null &&
     "toString" in value &&
     typeof value.toString === "function"
   ) {
-    return value.toString()
+    return value.toString();
   }
-  return "0"
+  return "0";
 }
 
 function toResponse(paymentIntent: {
-  id?: string
-  publicId: string
-  status: string
-  amount?: unknown
-  currency?: string | null
-  qrPayload?: string | null
-  deeplinkUrl?: string | null
-  redirectUrl?: string | null
-  expiresAt?: Date | null
+  id?: string;
+  publicId: string;
+  status: string;
+  amount?: unknown;
+  currency?: string | null;
+  qrPayload?: string | null;
+  deeplinkUrl?: string | null;
+  redirectUrl?: string | null;
+  expiresAt?: Date | null;
 }): CreatePaymentIntentResult {
   return {
     publicId: paymentIntent.publicId,
@@ -52,13 +52,13 @@ function toResponse(paymentIntent: {
     deeplinkUrl: paymentIntent.deeplinkUrl ?? null,
     redirectUrl: paymentIntent.redirectUrl ?? null,
     expiresAt: paymentIntent.expiresAt?.toISOString() || null,
-  }
+  };
 }
 
 function buildProviderCallbackUrl(providerCode: string): string {
-  const baseUrl = (process.env.APP_BASE_URL || "").replace(/\/+$/, "")
-  const providerSegment = providerCode.toLowerCase()
-  return `${baseUrl}/api/v1/providers/${providerSegment}/callback`
+  const baseUrl = (process.env.APP_BASE_URL || "").replace(/\/+$/, "");
+  const providerSegment = providerCode.toLowerCase();
+  return `${baseUrl}/api/v1/providers/${providerSegment}/callback`;
 }
 
 export async function createPaymentIntent(
@@ -71,7 +71,7 @@ export async function createPaymentIntent(
       "FORBIDDEN",
       "API key is not bound to a merchant account",
       403,
-    )
+    );
   }
 
   const merchant = await prisma.merchantAccount.findFirst({
@@ -80,14 +80,14 @@ export async function createPaymentIntent(
       tenantId: auth.tenantId,
       status: "ACTIVE",
     },
-  })
+  });
 
   if (!merchant) {
     throw new AppError(
       "MERCHANT_NOT_FOUND",
       "Merchant not found or inactive",
       404,
-    )
+    );
   }
 
   const existingMerchantOrder = input.merchantOrderId
@@ -98,13 +98,13 @@ export async function createPaymentIntent(
           merchantOrderId: input.merchantOrderId,
         },
       })
-    : null
+    : null;
 
   if (existingMerchantOrder) {
-    return toResponse(existingMerchantOrder)
+    return toResponse(existingMerchantOrder);
   }
 
-  const idemKey = opts?.idempotencyKey ?? null
+  const idemKey = opts?.idempotencyKey ?? null;
 
   const idem = await reserveIdempotency({
     tenantId: auth.tenantId,
@@ -113,20 +113,20 @@ export async function createPaymentIntent(
     requestMethod: "POST",
     requestBody: input,
     ...(opts?.event ? { event: opts.event } : {}),
-  })
+  });
 
   if (idem?.status === "REPLAY" && idem.responseBody) {
-    return idem.responseBody as CreatePaymentIntentResult
+    return idem.responseBody as CreatePaymentIntentResult;
   }
 
   let created: {
-    id: string
-    publicId: string
-    amount: unknown
-    currency: string
-    merchantOrderId: string | null
-    expiresAt: Date | null
-  } | null = null
+    id: string;
+    publicId: string;
+    amount: unknown;
+    currency: string;
+    merchantOrderId: string | null;
+    expiresAt: Date | null;
+  } | null = null;
 
   try {
     const route = await resolvePaymentRoute({
@@ -134,11 +134,11 @@ export async function createPaymentIntent(
       paymentMethodType: "PROMPTPAY_QR",
       currency: "THB",
       environment: merchant.environment,
-    })
+    });
 
-    const publicId = `piq_${nanoid(24)}`
-    const callbackUrl = buildProviderCallbackUrl(route.providerCode)
-    const expiresAt = new Date(Date.now() + 15 * 60 * 1000)
+    const publicId = `piq_${nanoid(24)}`;
+    const callbackUrl = buildProviderCallbackUrl(route.providerCode);
+    const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
 
     created = await prisma.paymentIntent.create({
       data: {
@@ -176,7 +176,7 @@ export async function createPaymentIntent(
           ],
         },
       },
-    })
+    });
 
     await applyPaymentTransition({
       paymentIntentId: created.id,
@@ -188,7 +188,7 @@ export async function createPaymentIntent(
         billerProfileId: route.billerProfile.id,
         providerCode: route.providerCode,
       },
-    })
+    });
 
     await applyPaymentTransition({
       paymentIntentId: created.id,
@@ -198,9 +198,9 @@ export async function createPaymentIntent(
       payload: {
         providerCode: route.providerCode,
       },
-    })
+    });
 
-    const provider = getProviderAdapter(route.providerCode)
+    const provider = getProviderAdapter(route.providerCode);
 
     const providerResult = await provider.createPayment({
       paymentIntentId: created.id,
@@ -221,7 +221,7 @@ export async function createPaymentIntent(
         credentialsEncrypted: route.billerProfile.credentialsEncrypted,
         config: route.billerProfile.config,
       },
-    })
+    });
 
     await prisma.providerAttempt.create({
       data: {
@@ -246,7 +246,7 @@ export async function createPaymentIntent(
         sentAt: new Date(),
         completedAt: new Date(),
       },
-    })
+    });
 
     const transitioned = providerResult.success
       ? await applyPaymentTransition({
@@ -292,7 +292,8 @@ export async function createPaymentIntent(
           eventType: "PROVIDER_REJECTED",
           summary: providerResult.errorMessage || "Provider rejected payment",
           patch: {
-            failureReason: providerResult.errorMessage ?? "Provider rejected payment",
+            failureReason:
+              providerResult.errorMessage ?? "Provider rejected payment",
             lastErrorCode: providerResult.errorCode ?? null,
             lastErrorMessage: providerResult.errorMessage ?? null,
           },
@@ -304,9 +305,9 @@ export async function createPaymentIntent(
               ? { errorMessage: providerResult.errorMessage }
               : {}),
           },
-        })
+        });
 
-    const response = toResponse(transitioned.payment)
+    const response = toResponse(transitioned.payment);
 
     await completeIdempotency({
       tenantId: auth.tenantId,
@@ -315,13 +316,13 @@ export async function createPaymentIntent(
       responseBody: response,
       resourceType: "Payment_Intent",
       resourceId: transitioned.payment.id,
-    })
+    });
 
-    return response
+    return response;
   } catch (error: unknown) {
     if (created?.id) {
       try {
-        const message = error instanceof Error ? error.message : "unknown"
+        const message = error instanceof Error ? error.message : "unknown";
 
         const failedTransition = await applyPaymentTransition({
           paymentIntentId: created.id,
@@ -342,9 +343,9 @@ export async function createPaymentIntent(
           payload: {
             message: message.slice(0, 500),
           },
-        })
+        });
 
-        const failureResponse = toResponse(failedTransition.payment)
+        const failureResponse = toResponse(failedTransition.payment);
 
         await completeIdempotency({
           tenantId: auth.tenantId,
@@ -353,7 +354,7 @@ export async function createPaymentIntent(
           responseBody: failureResponse,
           resourceType: "PaymentIntent",
           resourceId: failedTransition.payment.id,
-        })
+        });
       } catch {
         // best effort
       }
@@ -362,12 +363,12 @@ export async function createPaymentIntent(
         await releaseIdempotencyLock({
           tenantId: auth.tenantId,
           key: idemKey,
-        })
+        });
       } catch {
         // best effort
       }
     }
 
-    throw error
+    throw error;
   }
 }

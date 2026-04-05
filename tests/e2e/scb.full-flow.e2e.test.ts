@@ -502,11 +502,11 @@ describe("SCB full flow e2e-lite", () => {
       }
     }
 
-    mock.module("~/server/lib/errors", () => ({
+    mock.module("~~/server/lib/errors", () => ({
       AppError: FakeAppError,
     }));
 
-    mock.module("~/server/services/routing/resolvePaymentRoute", () => ({
+    mock.module("~~/server/services/routing/resolvePaymentRoute", () => ({
       resolvePaymentRoute: mock(async () => ({
         id: "route_001",
         providerCode: "SCB",
@@ -528,7 +528,7 @@ describe("SCB full flow e2e-lite", () => {
       })),
     }));
 
-    mock.module("~/server/services/idempotency/reserveIdempotency", () => ({
+    mock.module("~~/server/services/idempotency/reserveIdempotency", () => ({
       reserveIdempotency: mock(async () => ({
         status: "RESERVED",
         responseBody: null,
@@ -537,7 +537,7 @@ describe("SCB full flow e2e-lite", () => {
       releaseIdempotencyLock: mock(async () => undefined),
     }));
 
-    mock.module("~/server/services/providers/registry", () => ({
+    mock.module("~~/server/services/providers/registry", () => ({
       getProviderAdapter: mock(() => ({
         createPayment: mock(async () => ({
           success: true,
@@ -560,7 +560,7 @@ describe("SCB full flow e2e-lite", () => {
       })),
     }));
 
-    mock.module("~/server/lib/bullmq", () => ({
+    mock.module("~~/server/lib/bullmq", () => ({
       callbackQueue: {
         add: mock(async (_name: string, data: Record<string, unknown>) => {
           queueJobs.push(data);
@@ -575,7 +575,7 @@ describe("SCB full flow e2e-lite", () => {
       },
     }));
 
-    mock.module("~/server/services/webhooks/enqueueWebhook", () => ({
+    mock.module("~~/server/services/webhooks/enqueueWebhook", () => ({
       enqueueWebhookForPayment: mock(
         async (paymentIntentId: string, eventType: string) => {
           webhookJobs.push({ paymentIntentId, eventType });
@@ -583,23 +583,23 @@ describe("SCB full flow e2e-lite", () => {
       ),
     }));
 
-    mock.module("~/server/lib/crypto", () => ({
+    mock.module("~~/server/lib/crypto", () => ({
       sha256: (value: string) => `sha256:${value}`,
       hmacSha256: (secret: string, rawBody: string) => `${secret}:${rawBody}`,
       safeCompare: (a: string, b: string) => a === b,
     }));
 
     const { createPaymentIntent } =
-      await import("~/server/services/payments/createPaymentIntent");
+      await import("~~/server/services/payments/createPaymentIntent");
     const callbackRoute = (
-      await import("~/server/api/v1/providers/scb/callback.post")
+      await import("~~/server/api/v1/providers/scb/callback.post")
     ).default as (event: unknown) => Promise<{
       resCode: string;
       resDesc: string;
       transactionId: string;
     }>;
     const { processProviderCallback } =
-      await import("~/server/services/callbacks/processProviderCallback");
+      await import("~~/server/services/callbacks/processProviderCallback");
 
     const created = await createPaymentIntent(
       {

@@ -1,4 +1,4 @@
-import { logEvent } from "~/server/lib/observability";
+import { logEvent } from "~~/server/lib/observability";
 
 type QueueLogInput = {
   level?: "info" | "warn" | "error";

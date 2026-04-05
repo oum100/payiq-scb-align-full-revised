@@ -34,7 +34,7 @@ describe("webhook.worker logic", () => {
       data: {
         provider: "SCB",
         providerCallbackId: "pcb_worker_ok",
-        rawBody: JSON.stringify({ transactionId: "tx_001" })
+        rawBody: JSON.stringify({ transactionId: "tx_001" }),
       },
     };
 
@@ -42,8 +42,9 @@ describe("webhook.worker logic", () => {
 
     await prisma.providerCallback.updateMany({
       where: {
-        provider: job.data.provider,
-        eventId: job.data.eventId,
+        // provider: job.data.provider,
+        // eventId: job.data.eventId,
+        id: job.data.providerCallbackId,
       },
       data: {
         processStatus: "PROCESSED",
@@ -68,7 +69,7 @@ describe("webhook.worker logic", () => {
       data: {
         provider: "KBANK",
         providerCallbackId: "pcb_worker_fail",
-        rawBody: JSON.stringify({ reference: "kb_001" })
+        rawBody: JSON.stringify({ reference: "kb_001" }),
       },
       attemptsMade: 4,
       opts: {

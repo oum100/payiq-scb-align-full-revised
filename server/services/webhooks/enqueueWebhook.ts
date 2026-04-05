@@ -1,5 +1,5 @@
-import { prisma } from "~/server/lib/prisma"
-import { webhookQueue } from "~/server/lib/bullmq"
+import { prisma } from "~~/server/lib/prisma"
+import { webhookQueue } from "~~/server/lib/bullmq"
 import type { PaymentEventType } from "@prisma/client"
 
 export async function enqueueWebhookForPayment(paymentIntentId: string, eventType: PaymentEventType) {

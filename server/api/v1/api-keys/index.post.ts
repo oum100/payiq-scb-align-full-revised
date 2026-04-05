@@ -1,8 +1,8 @@
 import { z } from "zod";
-import { requireApiKeyAuth } from "~/server/lib/auth";
-import { requireScope } from "~/server/services/auth/requireScope";
-import { createApiKey } from "~/server/services/auth/createApiKey";
-import { AppError } from "~/server/lib/errors";
+import { requireApiKeyAuth } from "~~/server/lib/auth";
+import { requireScope } from "~~/server/services/auth/requireScope";
+import { createApiKey } from "~~/server/services/auth/createApiKey";
+import { AppError } from "~~/server/lib/errors";
 
 const schema = z.object({
   name: z.string().min(1),

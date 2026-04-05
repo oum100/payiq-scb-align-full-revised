@@ -13,8 +13,8 @@ export async function processWebhook(data: ProcessWebhookInput) {
   }
   const result = await processProviderCallback(data.providerCallbackId);
   return {
-    ok: true,
     provider: data.provider,
     ...(typeof result === "object" && result ? result : {}),
+    ok: true,
   };
 }

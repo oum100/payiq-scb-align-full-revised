@@ -1,9 +1,7 @@
 import { defineEventHandler, getRequestURL, setHeader } from "h3";
-import {
-  setEventRequestContext,
-} from "~/server/lib/request-context";
-import { getOrCreateRequestId, getOrCreateTraceId } from "~/server/lib/trace";
-import { logEvent } from "~/server/lib/observability";
+import { setEventRequestContext } from "../lib/request-context";
+import { getOrCreateRequestId, getOrCreateTraceId } from "../lib/trace";
+import { logEvent } from "../lib/observability";
 
 export default defineEventHandler((event) => {
   const requestId = getOrCreateRequestId(event);

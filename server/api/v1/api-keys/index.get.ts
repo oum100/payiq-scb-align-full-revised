@@ -1,7 +1,7 @@
-import { requireApiKeyAuth } from "~/server/lib/auth"
-import { requireScope } from "~/server/services/auth/requireScope"
-import { listApiKeys } from "~/server/services/auth/listApiKeys"
-import { AppError } from "~/server/lib/errors"
+import { requireApiKeyAuth } from "~~/server/lib/auth"
+import { requireScope } from "~~/server/services/auth/requireScope"
+import { listApiKeys } from "~~/server/services/auth/listApiKeys"
+import { AppError } from "~~/server/lib/errors"
 
 export default defineEventHandler(async (event) => {
   try {

@@ -1,8 +1,8 @@
 import { afterEach, beforeEach, describe, expect, mock, test } from "bun:test";
 import type { Job } from "bullmq";
 import { Worker } from "bullmq";
-import { callbackQueue, queueNames } from "~/server/lib/bullmq";
-import { redis } from "~/server/lib/redis";
+import { callbackQueue, queueNames } from "~~/server/lib/bullmq";
+import { redis } from "~~/server/lib/redis";
 
 function makeDecimal(value: string) {
   return {
@@ -619,16 +619,16 @@ describe("SCB runtime flow e2e", () => {
     }));
 
     const { createPaymentIntent } =
-      await import("~/server/services/payments/createPaymentIntent");
+      await import("~~/server/services/payments/createPaymentIntent");
     const callbackRoute = (
-      await import("~/server/api/v1/providers/scb/callback.post")
+      await import("~~/server/api/v1/providers/scb/callback.post")
     ).default as (event: unknown) => Promise<{
       resCode: string;
       resDesc: string;
       transactionId: string;
     }>;
     const { processProviderCallback } =
-      await import("~/server/services/callbacks/processProviderCallback");
+      await import("~~/server/services/callbacks/processProviderCallback");
 
     worker = new Worker(
       queueNames.callback,

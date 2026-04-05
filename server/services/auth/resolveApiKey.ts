@@ -1,7 +1,7 @@
-import { prisma } from "~/server/lib/prisma";
-import { AppError } from "~/server/lib/errors";
-import type { AuthContext } from "~/server/types/auth";
-import { splitFullApiKey, verifyApiKeySecret } from "~/server/lib/apiKeyCrypto";
+import { prisma } from "~~/server/lib/prisma";
+import { AppError } from "~~/server/lib/errors";
+import type { AuthContext } from "~~/server/types/auth";
+import { splitFullApiKey, verifyApiKeySecret } from "~~/server/lib/apiKeyCrypto";
 
 export async function resolveApiKey(fullApiKey: string): Promise<AuthContext> {
   if (!fullApiKey) throw new AppError("UNAUTHORIZED", "Missing API key", 401);

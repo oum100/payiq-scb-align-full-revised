@@ -1,4 +1,4 @@
-import { queueNames } from "~/server/lib/bullmq";
+import { queueNames } from "~~/server/lib/bullmq";
 
 export type QueuePolicy = {
   queueName: string;

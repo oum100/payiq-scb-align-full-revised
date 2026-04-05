@@ -1,10 +1,10 @@
 import { z } from "zod";
-import { createPaymentIntent } from "~/server/services/payments/createPaymentIntent";
-import { AppError } from "~/server/lib/errors";
-import { requireScope } from "~/server/services/auth/requireScope";
-import { checkPaymentSpamOrThrow } from "~/server/lib/rate-limit/payment-spam";
-import { requireApiKeyAuth } from "~/server/lib/auth";
-import type { CreatePaymentIntentInput } from "~/server/types/payment";
+import { createPaymentIntent } from "~~/server/services/payments/createPaymentIntent";
+import { AppError } from "~~/server/lib/errors";
+import { requireScope } from "~~/server/services/auth/requireScope";
+import { checkPaymentSpamOrThrow } from "~~/server/lib/rate-limit/payment-spam";
+import { requireApiKeyAuth } from "~~/server/lib/auth";
+import type { CreatePaymentIntentInput } from "~~/server/types/payment";
 
 const schema = z.object({
   merchantOrderId: z.string().optional(),

@@ -1,5 +1,5 @@
-import { prisma } from "~/server/lib/prisma";
-import { processProviderCallback } from "~/server/services/callbacks/processProviderCallback";
+import { prisma } from "~~/server/lib/prisma";
+import { processProviderCallback } from "~~/server/services/callbacks/processProviderCallback";
 
 export async function processWebhookEvent(providerCallbackId: string) {
   const callback = await prisma.providerCallback.findUnique({ where: { id: providerCallbackId } });

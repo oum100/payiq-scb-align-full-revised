@@ -1,4 +1,4 @@
-import { hmacSha256, safeCompare } from "~/server/lib/crypto"
+import { hmacSha256, safeCompare } from "~~/server/lib/crypto"
 
 export function buildScbCallbackSignature(secret: string, rawBody: string) {
   return hmacSha256(secret, rawBody)

@@ -1,7 +1,7 @@
 import { nanoid } from "nanoid";
-import { prisma } from "~/server/lib/prisma";
-import { callbackQueue } from "~/server/lib/bullmq";
-import { sha256 } from "~/server/lib/crypto";
+import { prisma } from "~~/server/lib/prisma";
+import { callbackQueue } from "~~/server/lib/bullmq";
+import { sha256 } from "~~/server/lib/crypto";
 import type { ProviderCode } from "@prisma/client";
 
 export async function storeProviderCallback(params: {
@@ -17,12 +17,14 @@ export async function storeProviderCallback(params: {
   callbackType?: string | null;
   workerName?: string | null;
 }) {
-  const dedupeKey = params.dedupeKey ?? [
-    params.providerCode,
-    params.providerTxnId ?? "NO_TXN",
-    params.providerReference ?? "NO_REF",
-    sha256(params.rawBody),
-  ].join(":");
+  const dedupeKey =
+    params.dedupeKey ??
+    [
+      params.providerCode,
+      params.providerTxnId ?? "NO_TXN",
+      params.providerReference ?? "NO_REF",
+      sha256(params.rawBody),
+    ].join(":");
 
   let callback;
   try {
@@ -39,7 +41,9 @@ export async function storeProviderCallback(params: {
         queryParams: (params.queryParams ?? {}) as any,
         body: params.body as any,
         rawBodySha256: sha256(params.rawBody),
-        ...(params.signatureValid === false ? { failedAt: new Date(), errorMessage: "Invalid webhook signature" } : {}),
+        ...(params.signatureValid === false
+          ? { failedAt: new Date(), errorMessage: "Invalid webhook signature" }
+          : {}),
         ...(params.workerName ? { workerName: params.workerName } : {}),
       },
     });

@@ -1,6 +1,6 @@
 import type { H3Event } from "h3"
 import { getHeader } from "h3"
-import { resolveApiKey } from "~/server/services/auth/resolveApiKey"
+import { resolveApiKey } from "~~/server/services/auth/resolveApiKey"
 
 export async function requireApiKeyAuth(event: H3Event) {
   const apiKey =

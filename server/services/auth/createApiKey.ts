@@ -1,11 +1,11 @@
-import { prisma } from "~/server/lib/prisma"
-import { AppError } from "~/server/lib/errors"
+import { prisma } from "~~/server/lib/prisma"
+import { AppError } from "~~/server/lib/errors"
 import {
   buildFullApiKey,
   generateApiKeySecret,
   generateKeyPrefix,
   hashApiKeySecret,
-} from "~/server/lib/apiKeyCrypto"
+} from "~~/server/lib/apiKeyCrypto"
 
 export type ApiKeyEnvironmentInput = "test" | "live" | "TEST" | "LIVE"
 

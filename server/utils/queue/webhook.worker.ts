@@ -1,8 +1,8 @@
 import { Worker } from "bullmq";
-import { redis } from "~/server/lib/redis";
-import { queueNames } from "~/server/lib/bullmq";
-import { processWebhook } from "~/server/utils/queue/webhook.processor";
-import { prisma } from "~/server/lib/prisma";
+import { redis } from "~~/server/lib/redis";
+import { queueNames } from "~~/server/lib/bullmq";
+import { processWebhook } from "~~/server/utils/queue/webhook.processor";
+import { prisma } from "~~/server/lib/prisma";
 
 new Worker(
   queueNames.webhookInbound,

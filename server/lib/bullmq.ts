@@ -1,5 +1,5 @@
 import { Queue } from "bullmq";
-import { redis } from "~/server/lib/redis";
+import { redis } from "~~/server/lib/redis";
 
 export const queueNames = {
   callback: "payiq-callback",

@@ -1,7 +1,7 @@
-import { getPaymentIntent } from "~/server/services/payments/getPaymentIntent"
-import { AppError } from "~/server/lib/errors"
-import { requireApiKeyAuth } from "~/server/lib/auth"
-import { requireScope } from "~/server/services/auth/requireScope"
+import { getPaymentIntent } from "~~/server/services/payments/getPaymentIntent"
+import { AppError } from "~~/server/lib/errors"
+import { requireApiKeyAuth } from "~~/server/lib/auth"
+import { requireScope } from "~~/server/services/auth/requireScope"
 
 export default defineEventHandler(async (event) => {
   try {

@@ -4,15 +4,15 @@ import {
   setResponseHeader,
   type H3Event,
 } from "h3";
-import { requireApiKeyAuth } from "~/server/lib/auth";
-import { getClientIpHash } from "~/server/lib/rate-limit/request";
-import { rateLimitService } from "~/server/lib/rate-limit/service";
-import { ROUTE_LIMITS } from "~/server/lib/rate-limit/config";
+import { requireApiKeyAuth } from "../lib/auth";
+import { getClientIpHash } from "../lib/rate-limit/request";
+import { rateLimitService } from "../lib/rate-limit/service";
+import { ROUTE_LIMITS } from "../lib/rate-limit/config";
 import {
   toCheckPolicyInput,
   type CheckPolicyInput,
   type RateLimitDecision,
-} from "~/server/lib/rate-limit/types";
+} from "../lib/rate-limit/types";
 
 type AuthAbuseRouteGroup = "auth:malformed" | "auth:unknown" | "auth:failed";
 

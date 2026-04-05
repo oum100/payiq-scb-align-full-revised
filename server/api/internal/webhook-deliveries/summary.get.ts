@@ -1,5 +1,5 @@
 import { defineEventHandler } from "h3";
-import { prisma } from "~/server/lib/prisma";
+import { prisma } from "~~/server/lib/prisma";
 
 export default defineEventHandler(async () => {
   const rows = await prisma.webhookDelivery.findMany({

@@ -1,5 +1,5 @@
-import { storeProviderCallback } from "~/server/services/callbacks/storeProviderCallback";
-import { normalizeScbCallback } from "~/server/services/providers/scb/scb.webhook";
+import { storeProviderCallback } from "~~/server/services/callbacks/storeProviderCallback";
+import { normalizeScbCallback } from "~~/server/services/providers/scb/scb.webhook";
 
 function buildAck(transactionId: string, confirmId?: string) {
   return {

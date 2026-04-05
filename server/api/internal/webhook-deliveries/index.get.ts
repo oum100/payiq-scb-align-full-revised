@@ -1,5 +1,5 @@
 import { defineEventHandler, getQuery } from "h3";
-import { prisma } from "~/server/lib/prisma";
+import { prisma } from "~~/server/lib/prisma";
 
 function toStringOrNull(value: unknown): string | null {
   if (typeof value !== "string") return null;
