@@ -18,6 +18,22 @@
     "noEmit": true,
     "moduleDetection": "force",
     "isolatedModules": true,
-    "skipLibCheck": true
-  }
+    "skipLibCheck": true,
+
+    "baseUrl": ".",
+    "ignoreDeprecations": "6.0",
+    "paths": {
+      "~~/*": ["./*"],
+      "@@/*": ["./*"],
+      "#server/*": ["./server/*"],
+      "@/*": ["./app/*"]
+    }
+  },
+  "include": [
+    ".nuxt/**/*.d.ts",
+    // "**/*", // <--- สำคัญมาก: ต้องมีบรรทัดนี้เพื่อให้ TS สแกนหาไฟล์ใน folder tests/ และ server/ ด้วย
+    "app/**/*",
+    "server/**/*",
+    "tests/**/*"
+  ]
 }

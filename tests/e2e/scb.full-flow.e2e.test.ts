@@ -296,7 +296,7 @@ describe("SCB full flow e2e-lite", () => {
       };
     };
 
-    mock.module("~/server/lib/prisma", () => ({
+    mock.module("~~/server/lib/prisma", () => ({
       prisma: {
         merchantAccount: {
           findFirst: mock(async () => ({
