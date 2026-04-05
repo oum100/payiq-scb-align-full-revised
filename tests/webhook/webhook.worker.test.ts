@@ -8,11 +8,11 @@ const prismaMock = {
 
 const processWebhookMock = mock();
 
-mock.module("~/server/lib/prisma", () => ({
+mock.module("~~/server/lib/prisma", () => ({
   prisma: prismaMock,
 }));
 
-mock.module("~/server/utils/queue/webhook.processor", () => ({
+mock.module("~~/server/utils/queue/webhook.processor", () => ({
   processWebhook: processWebhookMock,
 }));
 
@@ -27,8 +27,8 @@ describe("webhook.worker logic", () => {
     prismaMock.providerCallback.updateMany.mockResolvedValue({ count: 1 });
 
     const { processWebhook } =
-      await import("~/server/utils/queue/webhook.processor");
-    const { prisma } = await import("~/server/lib/prisma");
+      await import("~~/server/utils/queue/webhook.processor");
+    const { prisma } = await import("~~/server/lib/prisma");
 
     const job = {
       data: {
@@ -62,8 +62,8 @@ describe("webhook.worker logic", () => {
     prismaMock.providerCallback.updateMany.mockResolvedValue({ count: 1 });
 
     const { processWebhook } =
-      await import("~/server/utils/queue/webhook.processor");
-    const { prisma } = await import("~/server/lib/prisma");
+      await import("~~/server/utils/queue/webhook.processor");
+    const { prisma } = await import("~~/server/lib/prisma");
 
     const job = {
       data: {

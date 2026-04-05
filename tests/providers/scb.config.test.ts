@@ -1,5 +1,8 @@
-import { describe, expect, test } from "bun:test"
-import { getScbConfig, isScbMockMode } from "~/server/services/providers/scb/scb.config"
+import { describe, expect, test } from "bun:test";
+import {
+  getScbConfig,
+  isScbMockMode,
+} from "~~/server/services/providers/scb/scb.config";
 
 describe("scb.config", () => {
   test("parses config from billerProfile.config", () => {
@@ -18,15 +21,19 @@ describe("scb.config", () => {
         billerId: "123456789012345",
         callbackPrefix: "PYIQ",
       },
-    })
+    });
 
-    expect(config.apiBaseUrlV1).toBe("https://api-sandbox.partners.scb/partners/sandbox/v1")
-    expect(config.apiBaseUrlV2).toBe("https://api-sandbox.partners.scb/partners/sandbox/v2")
-    expect(config.apiKey).toBe("key_123")
-    expect(config.apiSecret).toBe("secret_123")
-    expect(config.billerId).toBe("123456789012345")
-    expect(config.callbackPrefix).toBe("PYIQ")
-  })
+    expect(config.apiBaseUrlV1).toBe(
+      "https://api-sandbox.partners.scb/partners/sandbox/v1",
+    );
+    expect(config.apiBaseUrlV2).toBe(
+      "https://api-sandbox.partners.scb/partners/sandbox/v2",
+    );
+    expect(config.apiKey).toBe("key_123");
+    expect(config.apiSecret).toBe("secret_123");
+    expect(config.billerId).toBe("123456789012345");
+    expect(config.callbackPrefix).toBe("PYIQ");
+  });
 
   test("falls back to top-level fields", () => {
     const config = getScbConfig({
@@ -40,12 +47,12 @@ describe("scb.config", () => {
         apiSecret: "secret_456",
         callbackPrefix: "SCB",
       },
-    })
+    });
 
-    expect(config.billerId).toBe("123456789012345")
-    expect(config.resourceOwnerId).toBe("key_456")
-    expect(config.callbackPrefix).toBe("SCB")
-  })
+    expect(config.billerId).toBe("123456789012345");
+    expect(config.resourceOwnerId).toBe("key_456");
+    expect(config.callbackPrefix).toBe("SCB");
+  });
 
   test("detects mock mode from config", () => {
     expect(
@@ -57,8 +64,8 @@ describe("scb.config", () => {
         credentialsEncrypted: {},
         config: { mock: true },
       }),
-    ).toBe(true)
-  })
+    ).toBe(true);
+  });
 
   test("throws when required config is missing", () => {
     expect(() =>
@@ -70,6 +77,6 @@ describe("scb.config", () => {
         credentialsEncrypted: {},
         config: {},
       }),
-    ).toThrow("missing required config")
-  })
-})
+    ).toThrow("missing required config");
+  });
+});

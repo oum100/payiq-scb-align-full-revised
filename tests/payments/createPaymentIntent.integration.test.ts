@@ -1,15 +1,15 @@
-import { afterEach, beforeEach, describe, expect, mock, test } from "bun:test"
+import { afterEach, beforeEach, describe, expect, mock, test } from "bun:test";
 
 type MockedModule = {
-  reset: () => void
-}
+  reset: () => void;
+};
 
 function makeDecimal(value: string) {
   return {
     toString() {
-      return value
+      return value;
     },
-  }
+  };
 }
 
 function createHarness(): MockedModule {
@@ -24,11 +24,11 @@ function createHarness(): MockedModule {
     rawResponse: { hello: "response" },
     errorCode: null,
     errorMessage: null,
-  }))
+  }));
 
-  const stateTransitions: Array<Record<string, unknown>> = []
-  const providerAttempts: Array<Record<string, unknown>> = []
-  const completeIdempotencyCalls: Array<Record<string, unknown>> = []
+  const stateTransitions: Array<Record<string, unknown>> = [];
+  const providerAttempts: Array<Record<string, unknown>> = [];
+  const completeIdempotencyCalls: Array<Record<string, unknown>> = [];
 
   const paymentCreated = {
     id: "pi_001",
@@ -37,9 +37,9 @@ function createHarness(): MockedModule {
     currency: "THB",
     merchantOrderId: "ORD-001",
     expiresAt: new Date("2026-03-22T10:15:00.000Z"),
-  }
+  };
 
-  mock.module("~/server/lib/prisma", () => ({
+  mock.module("~~/server/lib/prisma", () => ({
     prisma: {
       merchantAccount: {
         findFirst: mock(async () => ({
@@ -54,29 +54,29 @@ function createHarness(): MockedModule {
       },
       providerAttempt: {
         create: mock(async (args: { data: Record<string, unknown> }) => {
-          providerAttempts.push(args.data)
-          return { id: "pa_001" }
+          providerAttempts.push(args.data);
+          return { id: "pa_001" };
         }),
       },
     },
-  }))
+  }));
 
   class FakeAppError extends Error {
-    code: string
-    statusCode: number
+    code: string;
+    statusCode: number;
 
     constructor(code: string, message: string, statusCode: number) {
-      super(message)
-      this.code = code
-      this.statusCode = statusCode
+      super(message);
+      this.code = code;
+      this.statusCode = statusCode;
     }
   }
 
-  mock.module("~/server/lib/errors", () => ({
+  mock.module("~~/server/lib/errors", () => ({
     AppError: FakeAppError,
-  }))
+  }));
 
-  mock.module("~/server/services/routing/resolvePaymentRoute", () => ({
+  mock.module("~~/server/services/routing/resolvePaymentRoute", () => ({
     resolvePaymentRoute: mock(async () => ({
       id: "route_001",
       providerCode: "SCB",
@@ -96,7 +96,7 @@ function createHarness(): MockedModule {
         },
       },
     })),
-  }))
+  }));
 
   mock.module("~/server/services/idempotency/reserveIdempotency", () => ({
     reserveIdempotency: mock(async () => ({
@@ -104,12 +104,12 @@ function createHarness(): MockedModule {
       responseBody: null,
     })),
     completeIdempotency: mock(async (args: Record<string, unknown>) => {
-      completeIdempotencyCalls.push(args)
+      completeIdempotencyCalls.push(args);
     }),
     releaseIdempotencyLock: mock(async () => undefined),
-  }))
+  }));
 
-  mock.module("~/server/services/providers/registry", () => ({
+  mock.module("~~/server/services/providers/registry", () => ({
     getProviderAdapter: mock(() => ({
       createPayment: providerCreatePayment,
       inquirePayment: mock(async () => ({
@@ -119,17 +119,17 @@ function createHarness(): MockedModule {
         rawResponse: {},
       })),
     })),
-  }))
+  }));
 
-  mock.module("~/server/services/payments/stateMachine", () => ({
+  mock.module("~~/server/services/payments/stateMachine", () => ({
     applyPaymentTransition: mock(async (args: Record<string, unknown>) => {
-      stateTransitions.push(args)
+      stateTransitions.push(args);
 
-      const toStatus = String(args.toStatus || "")
+      const toStatus = String(args.toStatus || "");
       const patch =
         args.patch && typeof args.patch === "object"
           ? (args.patch as Record<string, unknown>)
-          : {}
+          : {};
 
       return {
         payment: {
@@ -139,7 +139,9 @@ function createHarness(): MockedModule {
           amount: makeDecimal("20.00"),
           currency: "THB",
           qrPayload:
-            typeof patch.qrPayload === "string" ? patch.qrPayload : "QR_RAW_001",
+            typeof patch.qrPayload === "string"
+              ? patch.qrPayload
+              : "QR_RAW_001",
           deeplinkUrl:
             typeof patch.deeplinkUrl === "string"
               ? patch.deeplinkUrl
@@ -150,44 +152,43 @@ function createHarness(): MockedModule {
               : null,
           expiresAt: new Date("2026-03-22T10:15:00.000Z"),
         },
-      }
+      };
     }),
-  }))
+  }));
 
   return {
     reset() {
-      providerCreatePayment.mockClear()
-      stateTransitions.length = 0
-      providerAttempts.length = 0
-      completeIdempotencyCalls.length = 0
+      providerCreatePayment.mockClear();
+      stateTransitions.length = 0;
+      providerAttempts.length = 0;
+      completeIdempotencyCalls.length = 0;
     },
-  }
+  };
 }
 
 describe("createPaymentIntent integration", () => {
-  let previousAppBaseUrl: string | undefined
+  let previousAppBaseUrl: string | undefined;
 
   beforeEach(() => {
-    previousAppBaseUrl = process.env.APP_BASE_URL
-    process.env.APP_BASE_URL = "https://payiq.example.com"
-  })
+    previousAppBaseUrl = process.env.APP_BASE_URL;
+    process.env.APP_BASE_URL = "https://payiq.example.com";
+  });
 
   afterEach(() => {
-    mock.restore()
+    mock.restore();
 
     if (previousAppBaseUrl === undefined) {
-      delete process.env.APP_BASE_URL
+      delete process.env.APP_BASE_URL;
     } else {
-      process.env.APP_BASE_URL = previousAppBaseUrl
+      process.env.APP_BASE_URL = previousAppBaseUrl;
     }
-  })
+  });
 
   test("creates payment, calls provider, stores providerAttempt, and returns awaiting_customer response", async () => {
-    createHarness()
+    createHarness();
 
-    const { createPaymentIntent } = await import(
-      "~/server/services/payments/createPaymentIntent"
-    )
+    const { createPaymentIntent } =
+      await import("~~/server/services/payments/createPaymentIntent");
 
     const result = await createPaymentIntent(
       {
@@ -205,36 +206,38 @@ describe("createPaymentIntent integration", () => {
       {
         idempotencyKey: "idem_001",
       },
-    )
+    );
 
-    expect(result.publicId).toBe("piq_test_001")
-    expect(result.status).toBe("AWAITING_CUSTOMER")
-    expect(result.amount).toBe("20.00")
-    expect(result.qrPayload).toBe("QR_RAW_001")
-    expect(result.deeplinkUrl).toBe("scbeasy://payment/001")
-  })
+    expect(result.publicId).toBe("piq_test_001");
+    expect(result.status).toBe("AWAITING_CUSTOMER");
+    expect(result.amount).toBe("20.00");
+    expect(result.qrPayload).toBe("QR_RAW_001");
+    expect(result.deeplinkUrl).toBe("scbeasy://payment/001");
+  });
 
   test("provider create receives merchantReference and provider callback url", async () => {
-    const receivedCalls: Array<Record<string, unknown>> = []
+    const receivedCalls: Array<Record<string, unknown>> = [];
 
-    const providerCreatePayment = mock(async (args: Record<string, unknown>) => {
-      receivedCalls.push(args)
+    const providerCreatePayment = mock(
+      async (args: Record<string, unknown>) => {
+        receivedCalls.push(args);
 
-      return {
-        success: true,
-        providerReference: "scb-ref-002",
-        providerTransactionId: "scb-txn-002",
-        qrPayload: "QR_RAW_002",
-        deeplinkUrl: "scbeasy://payment/002",
-        redirectUrl: null,
-        rawRequest: {},
-        rawResponse: {},
-        errorCode: null,
-        errorMessage: null,
-      }
-    })
+        return {
+          success: true,
+          providerReference: "scb-ref-002",
+          providerTransactionId: "scb-txn-002",
+          qrPayload: "QR_RAW_002",
+          deeplinkUrl: "scbeasy://payment/002",
+          redirectUrl: null,
+          rawRequest: {},
+          rawResponse: {},
+          errorCode: null,
+          errorMessage: null,
+        };
+      },
+    );
 
-    mock.module("~/server/lib/prisma", () => ({
+    mock.module("~~/server/lib/prisma", () => ({
       prisma: {
         merchantAccount: {
           findFirst: mock(async () => ({
@@ -258,24 +261,24 @@ describe("createPaymentIntent integration", () => {
           create: mock(async () => ({ id: "pa_001" })),
         },
       },
-    }))
+    }));
 
     class FakeAppError extends Error {
-      code: string
-      statusCode: number
+      code: string;
+      statusCode: number;
 
       constructor(code: string, message: string, statusCode: number) {
-        super(message)
-        this.code = code
-        this.statusCode = statusCode
+        super(message);
+        this.code = code;
+        this.statusCode = statusCode;
       }
     }
 
-    mock.module("~/server/lib/errors", () => ({
+    mock.module("~~/server/lib/errors", () => ({
       AppError: FakeAppError,
-    }))
+    }));
 
-    mock.module("~/server/services/routing/resolvePaymentRoute", () => ({
+    mock.module("~~/server/services/routing/resolvePaymentRoute", () => ({
       resolvePaymentRoute: mock(async () => ({
         id: "route_001",
         providerCode: "SCB",
@@ -295,18 +298,18 @@ describe("createPaymentIntent integration", () => {
           },
         },
       })),
-    }))
+    }));
 
-    mock.module("~/server/services/idempotency/reserveIdempotency", () => ({
+    mock.module("~~/server/services/idempotency/reserveIdempotency", () => ({
       reserveIdempotency: mock(async () => ({
         status: "RESERVED",
         responseBody: null,
       })),
       completeIdempotency: mock(async () => undefined),
       releaseIdempotencyLock: mock(async () => undefined),
-    }))
+    }));
 
-    mock.module("~/server/services/providers/registry", () => ({
+    mock.module("~~/server/services/providers/registry", () => ({
       getProviderAdapter: mock(() => ({
         createPayment: providerCreatePayment,
         inquirePayment: mock(async () => ({
@@ -316,9 +319,9 @@ describe("createPaymentIntent integration", () => {
           rawResponse: {},
         })),
       })),
-    }))
+    }));
 
-    mock.module("~/server/services/payments/stateMachine", () => ({
+    mock.module("~~/server/services/payments/stateMachine", () => ({
       applyPaymentTransition: mock(async (args: Record<string, unknown>) => ({
         payment: {
           id: "pi_001",
@@ -332,11 +335,10 @@ describe("createPaymentIntent integration", () => {
           expiresAt: new Date("2026-03-22T10:15:00.000Z"),
         },
       })),
-    }))
+    }));
 
-    const { createPaymentIntent } = await import(
-      "~/server/services/payments/createPaymentIntent"
-    )
+    const { createPaymentIntent } =
+      await import("~~/server/services/payments/createPaymentIntent");
 
     await createPaymentIntent(
       {
@@ -353,12 +355,12 @@ describe("createPaymentIntent integration", () => {
       {
         idempotencyKey: "idem_002",
       },
-    )
+    );
 
-    expect(receivedCalls).toHaveLength(1)
-    expect(receivedCalls[0]?.merchantReference).toBe("sess_iot_002")
+    expect(receivedCalls).toHaveLength(1);
+    expect(receivedCalls[0]?.merchantReference).toBe("sess_iot_002");
     expect(receivedCalls[0]?.callbackUrl).toBe(
       "https://payiq.example.com/api/v1/providers/scb/callback",
-    )
-  })
-})
+    );
+  });
+});

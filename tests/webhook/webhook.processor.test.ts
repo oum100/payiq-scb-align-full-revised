@@ -21,12 +21,12 @@ prismaMock.$transaction = mock(
   },
 );
 
-mock.module("~/server/lib/prisma", () => ({
+mock.module("~~/server/lib/prisma", () => ({
   prisma: prismaMock,
 }));
 
 const { processWebhookEvent } =
-  await import("~/server/services/webhooks/processWebhookEvent");
+  await import("~~/server/services/webhooks/processWebhookEvent");
 
 beforeEach(() => {
   prismaMock.providerCallback.findUnique.mockReset();

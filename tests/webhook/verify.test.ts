@@ -1,6 +1,6 @@
 import { describe, it, expect } from "bun:test";
 import crypto from "node:crypto";
-import { verifyWebhookSignature } from "~/server/utils/webhook/verify";
+import { verifyWebhookSignature } from "~~/server/utils/webhook/verify";
 
 function sign(ts: number, body: string, secret: string) {
   return crypto

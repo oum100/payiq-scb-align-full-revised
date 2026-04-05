@@ -35,14 +35,14 @@ const webhookDeliveryAddMock = mock();
 const providerCallbackAddMock = mock();
 const reconcileAddMock = mock();
 
-mock.module("~/server/tasks/queues", () => ({
+mock.module("~~/server/tasks/queues", () => ({
   webhookInboundQueue: { add: webhookInboundAddMock },
   webhookDeliveryQueue: { add: webhookDeliveryAddMock },
   providerCallbackQueue: { add: providerCallbackAddMock },
   reconcileQueue: { add: reconcileAddMock },
 }));
 
-mock.module("~/server/tasks/queue-policy", () => ({
+mock.module("~~/server/tasks/queue-policy", () => ({
   QUEUE_POLICIES: {
     webhookInbound: {
       jobName: "provider.webhook.process",
@@ -77,7 +77,7 @@ mock.module("~/server/tasks/queue-policy", () => ({
 
 const providerCallbackFindUniqueMock = mock();
 
-mock.module("~/server/lib/prisma", () => ({
+mock.module("~~/server/lib/prisma", () => ({
   prisma: {
     providerCallback: {
       findUnique: providerCallbackFindUniqueMock,
@@ -85,7 +85,7 @@ mock.module("~/server/lib/prisma", () => ({
   },
 }));
 
-const handler = (await import("~/server/api/internal/queues/dlq/retry.post"))
+const handler = (await import("~~/server/api/internal/queues/dlq/retry.post"))
   .default;
 
 function makeEvent() {

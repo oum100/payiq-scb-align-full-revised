@@ -56,7 +56,7 @@ function hashRequestBody(body: unknown): string {
 }
 
 async function loadFreshSubject() {
-  mock.module("~/server/lib/prisma", () => ({
+  mock.module("~~/server/lib/prisma", () => ({
     prisma: {
       idempotencyKey: {
         findUnique: findUniqueMock,

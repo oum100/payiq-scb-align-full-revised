@@ -4,13 +4,13 @@ mock.restore();
 
 const checkMock = mock();
 
-mock.module("~/server/lib/rate-limit/service", () => ({
+mock.module("~~/server/lib/rate-limit/service", () => ({
   rateLimitService: {
     check: checkMock,
   },
 }));
 
-const handler = (await import("~/server/middleware/20.rate-limit")).default;
+const handler = (await import("~~/server/middleware/20.rate-limit")).default;
 
 function makeEvent() {
   const headers: Record<string, string> = {};

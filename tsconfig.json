@@ -35,5 +35,5 @@
     "app/**/*",
     "server/**/*",
     "tests/**/*"
-  ]
+, "scb.full-flow.e2e.test.ts", "scb.runtime-flow.e2e.test.ts", "callback.hardening.integration.test.ts"  ]
 }

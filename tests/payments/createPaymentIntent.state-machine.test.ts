@@ -24,29 +24,29 @@ const getProviderAdapterMock = mock(() => ({
 const applyPaymentTransitionMock = mock();
 
 async function loadSubject() {
-  mock.module("~/server/lib/prisma", () => ({
+  mock.module("~~/server/lib/prisma", () => ({
     prisma: prismaMock,
   }));
 
-  mock.module("~/server/services/payments/stateMachine", () => ({
+  mock.module("~~/server/services/payments/stateMachine", () => ({
     applyPaymentTransition: applyPaymentTransitionMock,
   }));
 
-  mock.module("~/server/services/routing/resolvePaymentRoute", () => ({
+  mock.module("~~/server/services/routing/resolvePaymentRoute", () => ({
     resolvePaymentRoute: resolvePaymentRouteMock,
   }));
 
-  mock.module("~/server/services/providers/registry", () => ({
+  mock.module("~~/server/services/providers/registry", () => ({
     getProviderAdapter: getProviderAdapterMock,
   }));
 
-  mock.module("~/server/services/idempotency/reserveIdempotency", () => ({
+  mock.module("~~/server/services/idempotency/reserveIdempotency", () => ({
     reserveIdempotency: reserveIdempotencyMock,
     completeIdempotency: completeIdempotencyMock,
     releaseIdempotencyLock: releaseIdempotencyLockMock,
   }));
 
-  return await import("~/server/services/payments/createPaymentIntent");
+  return await import("~~/server/services/payments/createPaymentIntent");
 }
 
 describe("createPaymentIntent with state machine", () => {

@@ -18,25 +18,24 @@ const getProviderAdapterMock = mock(() => providerAdapterMock);
 const applyPaymentTransitionMock = mock();
 const enqueueWebhookForPaymentMock = mock();
 
-mock.module("~/server/lib/prisma", () => ({
+mock.module("~~/server/lib/prisma", () => ({
   prisma: prismaMock,
 }));
 
-mock.module("~/server/services/providers/registry", () => ({
+mock.module("~~/server/services/providers/registry", () => ({
   getProviderAdapter: getProviderAdapterMock,
 }));
 
-mock.module("~/server/services/payments/stateMachine", () => ({
+mock.module("~~/server/services/payments/stateMachine", () => ({
   applyPaymentTransition: applyPaymentTransitionMock,
 }));
 
-mock.module("~/server/services/webhooks/enqueueWebhook", () => ({
+mock.module("~~/server/services/webhooks/enqueueWebhook", () => ({
   enqueueWebhookForPayment: enqueueWebhookForPaymentMock,
 }));
 
-const { reconcilePayment } = await import(
-  "~/server/services/reconcile/reconcilePayment"
-);
+const { reconcilePayment } =
+  await import("~~/server/services/reconcile/reconcilePayment");
 
 describe("reconcilePayment", () => {
   beforeEach(() => {

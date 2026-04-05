@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, mock, test } from "bun:test";
-import { clearScbTokenCache } from "~/server/services/providers/scb/scb.auth";
-import { scbProvider } from "~/server/services/providers/scb/scb.adapter";
+import { clearScbTokenCache } from "~~/server/services/providers/scb/scb.auth";
+import { scbProvider } from "~~/server/services/providers/scb/scb.adapter";
 
 const originalFetch = global.fetch;
 

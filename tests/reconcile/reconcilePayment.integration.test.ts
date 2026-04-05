@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, mock, test } from "bun:test"
+import { afterEach, describe, expect, mock, test } from "bun:test";
 
 function makePayment(status: string) {
   return {
@@ -19,44 +19,44 @@ function makePayment(status: string) {
         environment: "LIVE",
       },
     },
-  }
+  };
 }
 
 describe("reconcilePayment integration", () => {
   afterEach(() => {
-    mock.restore()
-  })
+    mock.restore();
+  });
 
   test("corrects payment to SUCCEEDED when provider inquiry succeeds", async () => {
-    const createdRecords: Array<Record<string, unknown>> = []
-    const updatedRecords: Array<Record<string, unknown>> = []
-    const paymentUpdates: Array<Record<string, unknown>> = []
-    const webhookCalls: Array<Record<string, unknown>> = []
-    const transitionCalls: Array<Record<string, unknown>> = []
+    const createdRecords: Array<Record<string, unknown>> = [];
+    const updatedRecords: Array<Record<string, unknown>> = [];
+    const paymentUpdates: Array<Record<string, unknown>> = [];
+    const webhookCalls: Array<Record<string, unknown>> = [];
+    const transitionCalls: Array<Record<string, unknown>> = [];
 
-    mock.module("~/server/lib/prisma", () => ({
+    mock.module("~~/server/lib/prisma", () => ({
       prisma: {
         paymentIntent: {
           findUnique: mock(async () => makePayment("AWAITING_CUSTOMER")),
           update: mock(async (args: { data: Record<string, unknown> }) => {
-            paymentUpdates.push(args.data)
-            return { id: "pi_001" }
+            paymentUpdates.push(args.data);
+            return { id: "pi_001" };
           }),
         },
         reconciliationRecord: {
           create: mock(async (args: { data: Record<string, unknown> }) => {
-            createdRecords.push(args.data)
-            return { id: "rr_001" }
+            createdRecords.push(args.data);
+            return { id: "rr_001" };
           }),
           update: mock(async (args: { data: Record<string, unknown> }) => {
-            updatedRecords.push(args.data)
-            return { id: "rr_001" }
+            updatedRecords.push(args.data);
+            return { id: "rr_001" };
           }),
         },
       },
-    }))
+    }));
 
-    mock.module("~/server/services/providers/registry", () => ({
+    mock.module("~~/server/services/providers/registry", () => ({
       getProviderAdapter: mock(() => ({
         inquirePayment: mock(async () => ({
           status: "SUCCEEDED",
@@ -65,73 +65,74 @@ describe("reconcilePayment integration", () => {
           rawResponse: { provider: "SCB", status: "SUCCESS" },
         })),
       })),
-    }))
+    }));
 
-    mock.module("~/server/services/payments/stateMachine", () => ({
+    mock.module("~~/server/services/payments/stateMachine", () => ({
       applyPaymentTransition: mock(async (args: Record<string, unknown>) => {
-        transitionCalls.push(args)
+        transitionCalls.push(args);
         return {
           applied: true,
           payment: {
             id: "pi_001",
             status: "SUCCEEDED",
           },
-        }
+        };
       }),
-    }))
+    }));
 
-    mock.module("~/server/services/webhooks/enqueueWebhook", () => ({
-      enqueueWebhookForPayment: mock(async (paymentIntentId: string, eventType: string) => {
-        webhookCalls.push({ paymentIntentId, eventType })
-      }),
-    }))
+    mock.module("~~/server/services/webhooks/enqueueWebhook", () => ({
+      enqueueWebhookForPayment: mock(
+        async (paymentIntentId: string, eventType: string) => {
+          webhookCalls.push({ paymentIntentId, eventType });
+        },
+      ),
+    }));
 
-    const { reconcilePayment } = await import(
-      "~/server/services/reconcile/reconcilePayment"
-    )
+    const { reconcilePayment } =
+      await import("~~/server/services/reconcile/reconcilePayment");
 
-    const result = await reconcilePayment("pi_001")
+    const result = await reconcilePayment("pi_001");
 
-    expect(result.ok).toBe(true)
-    expect(result.corrected).toBe(true)
-    expect(result.status).toBe("SUCCEEDED")
-    expect(createdRecords).toHaveLength(1)
-    expect(transitionCalls).toHaveLength(1)
-    expect(transitionCalls[0]?.toStatus).toBe("SUCCEEDED")
+    expect(result.ok).toBe(true);
+    expect(result.corrected).toBe(true);
+    expect(result.status).toBe("SUCCEEDED");
+    expect(createdRecords).toHaveLength(1);
+    expect(transitionCalls).toHaveLength(1);
+    expect(transitionCalls[0]?.toStatus).toBe("SUCCEEDED");
     expect(webhookCalls).toEqual([
       { paymentIntentId: "pi_001", eventType: "PAYMENT_SUCCEEDED" },
-    ])
-    expect(updatedRecords.at(-1)?.status).toBe("CORRECTED")
-  })
+    ]);
+    expect(updatedRecords.at(-1)?.status).toBe("CORRECTED");
+  });
 
   test("marks pending without correcting when provider inquiry is still pending", async () => {
-    const createdRecords: Array<Record<string, unknown>> = []
-    const updatedRecords: Array<Record<string, unknown>> = []
-    const paymentUpdates: Array<Record<string, unknown>> = []
+    const createdRecords: Array<Record<string, unknown>> = [];
+    const updatedRecords: Array<Record<string, unknown>> = [];
+    const paymentUpdates: Array<Record<string, unknown>> = [];
 
-    mock.module("~/server/lib/prisma", () => ({
+    mock.module("~~/server/lib/prisma", () => ({
       prisma: {
         paymentIntent: {
           findUnique: mock(async () => makePayment("AWAITING_CUSTOMER")),
           update: mock(async (args: { data: Record<string, unknown> }) => {
-            paymentUpdates.push(args.data)
-            return { id: "pi_001" }
+            paymentUpdates.push(args.data);
+            return { id: "pi_001" };
           }),
         },
         reconciliationRecord: {
           create: mock(async (args: { data: Record<string, unknown> }) => {
-            createdRecords.push(args.data)
-            return { id: "rr_002" }
+            createdRecords.push(args.data);
+            return { id: "rr_002" };
           }),
           update: mock(async (args: { data: Record<string, unknown> }) => {
-            updatedRecords.push(args.data)
-            return { id: "rr_002" }
+            updatedRecords.push(args.data);
+            return { id: "rr_002" };
           }),
         },
       },
-    }))
+    }));
 
-    mock.module("~/server/services/providers/registry", () => ({
+    mock.module("~~/server/services/providers/registry", () => ({
       getProviderAdapter: mock(() => ({
         inquirePayment: mock(async () => ({
           status: "PENDING",
@@ -140,38 +141,37 @@ describe("reconcilePayment integration", () => {
           rawResponse: { provider: "SCB", status: "PENDING" },
         })),
       })),
-    }))
+    }));
 
-    mock.module("~/server/services/payments/stateMachine", () => ({
+    mock.module("~~/server/services/payments/stateMachine", () => ({
       applyPaymentTransition: mock(async () => {
-        throw new Error("should not transition")
+        throw new Error("should not transition");
       }),
-    }))
+    }));
 
-    mock.module("~/server/services/webhooks/enqueueWebhook", () => ({
+    mock.module("~~/server/services/webhooks/enqueueWebhook", () => ({
       enqueueWebhookForPayment: mock(async () => undefined),
-    }))
+    }));
 
-    const { reconcilePayment } = await import(
-      "~/server/services/reconcile/reconcilePayment"
-    )
+    const { reconcilePayment } =
+      await import("~~/server/services/reconcile/reconcilePayment");
 
-    const result = await reconcilePayment("pi_001")
+    const result = await reconcilePayment("pi_001");
 
-    expect(result.ok).toBe(true)
-    expect(result.corrected).toBe(false)
-    expect(result.reason).toBe("reconciliation pending")
-    expect(createdRecords).toHaveLength(1)
-    expect(updatedRecords.at(-1)?.status).toBe("PENDING")
-    expect(paymentUpdates).toHaveLength(1)
-  })
+    expect(result.ok).toBe(true);
+    expect(result.corrected).toBe(false);
+    expect(result.reason).toBe("reconciliation pending");
+    expect(createdRecords).toHaveLength(1);
+    expect(updatedRecords.at(-1)?.status).toBe("PENDING");
+    expect(paymentUpdates).toHaveLength(1);
+  });
 
   test("corrects payment to EXPIRED when provider inquiry returns expired", async () => {
-    const updatedRecords: Array<Record<string, unknown>> = []
-    const webhookCalls: Array<Record<string, unknown>> = []
-    const transitionCalls: Array<Record<string, unknown>> = []
+    const updatedRecords: Array<Record<string, unknown>> = [];
+    const webhookCalls: Array<Record<string, unknown>> = [];
+    const transitionCalls: Array<Record<string, unknown>> = [];
 
-    mock.module("~/server/lib/prisma", () => ({
+    mock.module("~~/server/lib/prisma", () => ({
       prisma: {
         paymentIntent: {
           findUnique: mock(async () => makePayment("AWAITING_CUSTOMER")),
@@ -180,14 +180,14 @@ describe("reconcilePayment integration", () => {
         reconciliationRecord: {
           create: mock(async () => ({ id: "rr_003" })),
           update: mock(async (args: { data: Record<string, unknown> }) => {
-            updatedRecords.push(args.data)
-            return { id: "rr_003" }
+            updatedRecords.push(args.data);
+            return { id: "rr_003" };
           }),
         },
       },
-    }))
+    }));
 
-    mock.module("~/server/services/providers/registry", () => ({
+    mock.module("~~/server/services/providers/registry", () => ({
       getProviderAdapter: mock(() => ({
         inquirePayment: mock(async () => ({
           status: "EXPIRED",
@@ -196,48 +196,49 @@ describe("reconcilePayment integration", () => {
           rawResponse: { provider: "SCB", status: "EXPIRED" },
         })),
       })),
-    }))
+    }));
 
-    mock.module("~/server/services/payments/stateMachine", () => ({
+    mock.module("~~/server/services/payments/stateMachine", () => ({
       applyPaymentTransition: mock(async (args: Record<string, unknown>) => {
-        transitionCalls.push(args)
+        transitionCalls.push(args);
         return {
           applied: true,
           payment: {
             id: "pi_001",
             status: "EXPIRED",
           },
-        }
+        };
       }),
-    }))
+    }));
 
-    mock.module("~/server/services/webhooks/enqueueWebhook", () => ({
-      enqueueWebhookForPayment: mock(async (paymentIntentId: string, eventType: string) => {
-        webhookCalls.push({ paymentIntentId, eventType })
-      }),
-    }))
+    mock.module("~~/server/services/webhooks/enqueueWebhook", () => ({
+      enqueueWebhookForPayment: mock(
+        async (paymentIntentId: string, eventType: string) => {
+          webhookCalls.push({ paymentIntentId, eventType });
+        },
+      ),
+    }));
 
-    const { reconcilePayment } = await import(
-      "~/server/services/reconcile/reconcilePayment"
-    )
+    const { reconcilePayment } =
+      await import("~~/server/services/reconcile/reconcilePayment");
 
-    const result = await reconcilePayment("pi_001")
+    const result = await reconcilePayment("pi_001");
 
-    expect(result.ok).toBe(true)
-    expect(result.corrected).toBe(true)
-    expect(result.status).toBe("EXPIRED")
-    expect(transitionCalls).toHaveLength(1)
-    expect(transitionCalls[0]?.toStatus).toBe("EXPIRED")
+    expect(result.ok).toBe(true);
+    expect(result.corrected).toBe(true);
+    expect(result.status).toBe("EXPIRED");
+    expect(transitionCalls).toHaveLength(1);
+    expect(transitionCalls[0]?.toStatus).toBe("EXPIRED");
     expect(webhookCalls).toEqual([
       { paymentIntentId: "pi_001", eventType: "PAYMENT_EXPIRED" },
-    ])
-    expect(updatedRecords.at(-1)?.status).toBe("CORRECTED")
-  })
+    ]);
+    expect(updatedRecords.at(-1)?.status).toBe("CORRECTED");
+  });
 
   test("marks mismatch when provider inquiry returns failed", async () => {
-    const updatedRecords: Array<Record<string, unknown>> = []
+    const updatedRecords: Array<Record<string, unknown>> = [];
 
-    mock.module("~/server/lib/prisma", () => ({
+    mock.module("~~/server/lib/prisma", () => ({
       prisma: {
         paymentIntent: {
           findUnique: mock(async () => makePayment("AWAITING_CUSTOMER")),
@@ -246,14 +247,14 @@ describe("reconcilePayment integration", () => {
         reconciliationRecord: {
           create: mock(async () => ({ id: "rr_004" })),
           update: mock(async (args: { data: Record<string, unknown> }) => {
-            updatedRecords.push(args.data)
-            return { id: "rr_004" }
+            updatedRecords.push(args.data);
+            return { id: "rr_004" };
           }),
         },
       },
-    }))
+    }));
 
-    mock.module("~/server/services/providers/registry", () => ({
+    mock.module("~~/server/services/providers/registry", () => ({
       getProviderAdapter: mock(() => ({
         inquirePayment: mock(async () => ({
           status: "FAILED",
@@ -262,27 +263,26 @@ describe("reconcilePayment integration", () => {
           rawResponse: { provider: "SCB", status: "FAILED" },
         })),
       })),
-    }))
+    }));
 
-    mock.module("~/server/services/payments/stateMachine", () => ({
+    mock.module("~~/server/services/payments/stateMachine", () => ({
       applyPaymentTransition: mock(async () => {
-        throw new Error("should not transition")
+        throw new Error("should not transition");
       }),
-    }))
+    }));
 
-    mock.module("~/server/services/webhooks/enqueueWebhook", () => ({
+    mock.module("~~/server/services/webhooks/enqueueWebhook", () => ({
       enqueueWebhookForPayment: mock(async () => undefined),
-    }))
+    }));
 
-    const { reconcilePayment } = await import(
-      "~/server/services/reconcile/reconcilePayment"
-    )
+    const { reconcilePayment } =
+      await import("~~/server/services/reconcile/reconcilePayment");
 
-    const result = await reconcilePayment("pi_001")
+    const result = await reconcilePayment("pi_001");
 
-    expect(result.ok).toBe(true)
-    expect(result.corrected).toBe(false)
-    expect(result.reason).toBe("provider reported failed")
-    expect(updatedRecords.at(-1)?.status).toBe("MISMATCH")
-  })
-})
+    expect(result.ok).toBe(true);
+    expect(result.corrected).toBe(false);
+    expect(result.reason).toBe("provider reported failed");
+    expect(updatedRecords.at(-1)?.status).toBe("MISMATCH");
+  });
+});

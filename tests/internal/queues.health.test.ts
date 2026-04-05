@@ -57,9 +57,9 @@ const mockedQueues = {
   reconcileDlqQueue: makeQueue("payiq-reconcile-dlq"),
 };
 
-mock.module("~/server/tasks/queues", () => mockedQueues);
+mock.module("~~/server/tasks/queues", () => mockedQueues);
 
-const handler = (await import("~/server/api/internal/queues/health.get"))
+const handler = (await import("~~/server/api/internal/queues/health.get"))
   .default;
 
 describe("GET /api/internal/queues/health", () => {

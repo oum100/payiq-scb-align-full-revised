@@ -1,20 +1,20 @@
-import { describe, expect, test } from "bun:test"
+import { describe, expect, test } from "bun:test";
 import {
   buildScbCreateQrRequest,
   getScbResponseCode,
   mapScbCreateResponse,
   mapScbInquiryResponse,
   mapScbStatusToInternal,
-} from "~/server/services/providers/scb/scb.mapper"
+} from "~~/server/services/providers/scb/scb.mapper";
 
 describe("scb.mapper", () => {
   test("maps statuses", () => {
-    expect(mapScbStatusToInternal("SUCCESS")).toBe("SUCCEEDED")
-    expect(mapScbStatusToInternal("AUTH")).toBe("SUCCEEDED")
-    expect(mapScbStatusToInternal("PENDING")).toBe("PENDING")
-    expect(mapScbStatusToInternal("EXPIRED")).toBe("EXPIRED")
-    expect(mapScbStatusToInternal("UNKNOWN")).toBe("FAILED")
-  })
+    expect(mapScbStatusToInternal("SUCCESS")).toBe("SUCCEEDED");
+    expect(mapScbStatusToInternal("AUTH")).toBe("SUCCEEDED");
+    expect(mapScbStatusToInternal("PENDING")).toBe("PENDING");
+    expect(mapScbStatusToInternal("EXPIRED")).toBe("EXPIRED");
+    expect(mapScbStatusToInternal("UNKNOWN")).toBe("FAILED");
+  });
 
   test("builds QR v2 request with SCB refs", () => {
     const request = buildScbCreateQrRequest({
@@ -36,21 +36,21 @@ describe("scb.mapper", () => {
       },
       billerId: "123456789012345",
       callbackPrefix: "PYIQ",
-    })
+    });
 
-    expect(request.qrType).toBe("PP")
-    expect(request.ppType).toBe("BILLERID")
-    expect(request.ppId).toBe("123456789012345")
-    expect(request.ref1).toBe("PIQTEST123456")
-    expect(request.ref2).toBe("ORD001")
-    expect(request.ref3?.startsWith("PYIQ")).toBe(true)
-  })
+    expect(request.qrType).toBe("PP");
+    expect(request.ppType).toBe("BILLERID");
+    expect(request.ppId).toBe("123456789012345");
+    expect(request.ref1).toBe("PIQTEST123456");
+    expect(request.ref2).toBe("ORD001");
+    expect(request.ref3?.startsWith("PYIQ")).toBe(true);
+  });
 
   test("extracts response code", () => {
-    expect(getScbResponseCode({ status: { code: 1000 } })).toBe("1000")
-    expect(getScbResponseCode({ data: { code: "0000" } })).toBe("0000")
-    expect(getScbResponseCode({ statusCode: "4001" })).toBe("4001")
-  })
+    expect(getScbResponseCode({ status: { code: 1000 } })).toBe("1000");
+    expect(getScbResponseCode({ data: { code: "0000" } })).toBe("0000");
+    expect(getScbResponseCode({ statusCode: "4001" })).toBe("4001");
+  });
 
   test("maps create response", () => {
     const result = mapScbCreateResponse({
@@ -78,15 +78,15 @@ describe("scb.mapper", () => {
       ok: true,
       rawRequest: { hello: "world" },
       rawResponse: { ok: true },
-    })
+    });
 
-    expect(result.success).toBe(true)
-    expect(result.providerReference).toBe("PIQREF001")
-    expect(result.providerTransactionId).toBeNull()
-    expect(result.providerQrRef).toBe("PYIQABC123")
-    expect(result.qrPayload).toBe("QRDATA")
-    expect(result.redirectUrl).toBe("https://example.com/qr.png")
-  })
+    expect(result.success).toBe(true);
+    expect(result.providerReference).toBe("PIQREF001");
+    expect(result.providerTransactionId).toBeNull();
+    expect(result.providerQrRef).toBe("PYIQABC123");
+    expect(result.qrPayload).toBe("QRDATA");
+    expect(result.redirectUrl).toBe("https://example.com/qr.png");
+  });
 
   test("maps inquiry response", () => {
     const result = mapScbInquiryResponse({
@@ -108,11 +108,11 @@ describe("scb.mapper", () => {
         ],
       },
       rawResponse: { ok: true },
-    })
+    });
 
-    expect(result.providerTransactionId).toBe("txn_2")
-    expect(result.providerReference).toBe("PIQREF001")
-    expect(result.providerQrRef).toBe("PYIQABC123")
-    expect(result.status).toBe("SUCCEEDED")
-  })
-})
+    expect(result.providerTransactionId).toBe("txn_2");
+    expect(result.providerReference).toBe("PIQREF001");
+    expect(result.providerQrRef).toBe("PYIQABC123");
+    expect(result.status).toBe("SUCCEEDED");
+  });
+});

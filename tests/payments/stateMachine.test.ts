@@ -20,14 +20,14 @@ let applyPaymentTransition: any;
 let canTransition: any;
 
 async function loadFreshSubject() {
-  mock.module("~/server/lib/prisma", () => ({
+  mock.module("~~/server/lib/prisma", () => ({
     prisma: prismaMock,
   }));
 
   // สำคัญมาก: ใช้ cache-busting import เพื่อไม่เอา stateMachine ที่ถูก mock
   // จาก test ไฟล์อื่นมาก่อนหน้านี้กลับมาใช้ซ้ำ
   const mod = await import(
-    `../../server/services/payments/stateMachine.ts?fresh=${Date.now()}_${Math.random()}`
+    `~~/server/services/payments/stateMachine.ts?fresh=${Date.now()}_${Math.random()}`
   );
 
   return mod;

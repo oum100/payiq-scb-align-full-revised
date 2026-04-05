@@ -13,15 +13,15 @@ const prismaMock = {
 
 const enqueueWebhookForPaymentMock = mock();
 
-mock.module("../../server/lib/prisma", () => ({
+mock.module("~~/server/lib/prisma", () => ({
   prisma: prismaMock,
 }));
 
-mock.module("../../server/services/webhooks/enqueueWebhookForPayment", () => ({
+mock.module("~~/server/services/webhooks/enqueueWebhookForPayment", () => ({
   enqueueWebhookForPayment: enqueueWebhookForPaymentMock,
 }));
 
-import { processWebhookEvent } from "../../server/services/webhooks/processWebhookEvent";
+import { processWebhookEvent } from "~~/server/services/webhooks/processWebhookEvent";
 
 describe("processWebhookEvent", () => {
   beforeEach(() => {

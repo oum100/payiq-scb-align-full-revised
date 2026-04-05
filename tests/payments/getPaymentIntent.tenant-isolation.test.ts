@@ -2,7 +2,7 @@ import { describe, expect, it, mock } from "bun:test";
 
 const findFirstMock = mock();
 
-mock.module("~/server/lib/prisma", () => ({
+mock.module("~~/server/lib/prisma", () => ({
   prisma: {
     paymentIntent: {
       findFirst: findFirstMock,
@@ -11,7 +11,7 @@ mock.module("~/server/lib/prisma", () => ({
 }));
 
 const { getPaymentIntent } =
-  await import("~/server/services/payments/getPaymentIntent");
+  await import("~~/server/services/payments/getPaymentIntent");
 
 describe("getPaymentIntent tenant isolation", () => {
   it("filters by tenantId and merchantAccountId when merchant-scoped API key is used", async () => {

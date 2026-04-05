@@ -9,17 +9,17 @@ const prismaMock = {
 
 const processWebhookEventMock = mock();
 
-mock.module("../../server/lib/prisma", () => ({
+mock.module("~~/server/lib/prisma", () => ({
   prisma: prismaMock,
 }));
 
-mock.module("../../server/services/webhooks/processWebhookEvent", () => ({
+mock.module("~~/server/services/webhooks/processWebhookEvent", () => ({
   processWebhookEvent: processWebhookEventMock,
 }));
 
 const { handleWebhookInboundJob } =
-  await import("../../server/services/webhooks/handleWebhookInboundJob");
-const { NonRetryableJobError } = await import("../../server/tasks/job-errors");
+  await import("~~/server/services/webhooks/handleWebhookInboundJob");
+const { NonRetryableJobError } = await import("~~/server/tasks/job-errors");
 
 beforeEach(() => {
   prismaMock.providerCallback.findUnique.mockReset();
@@ -111,7 +111,9 @@ describe("handleWebhookInboundJob", () => {
   });
 
   it("marks VERIFIED and throws for retry on non-final attempt", async () => {
-    prismaMock.providerCallback.findUnique.mockResolvedValue({ id: "wh_retry_1" });
+    prismaMock.providerCallback.findUnique.mockResolvedValue({
+      id: "wh_retry_1",
+    });
     processWebhookEventMock.mockRejectedValue(new Error("temporary failure"));
     prismaMock.providerCallback.update.mockResolvedValue({ id: "wh_retry_1" });
 
@@ -142,7 +144,9 @@ describe("handleWebhookInboundJob", () => {
   });
 
   it("marks FAILED and sends to DLQ on final attempt", async () => {
-    prismaMock.providerCallback.findUnique.mockResolvedValue({ id: "wh_fail_1" });
+    prismaMock.providerCallback.findUnique.mockResolvedValue({
+      id: "wh_fail_1",
+    });
     processWebhookEventMock.mockRejectedValue(new Error("permanent failure"));
     prismaMock.providerCallback.update.mockResolvedValue({ id: "wh_fail_1" });
 
@@ -186,7 +190,9 @@ describe("handleWebhookInboundJob", () => {
   });
 
   it("uses default attempts=1 and goes DLQ immediately", async () => {
-    prismaMock.providerCallback.findUnique.mockResolvedValue({ id: "wh_fail_2" });
+    prismaMock.providerCallback.findUnique.mockResolvedValue({
+      id: "wh_fail_2",
+    });
     processWebhookEventMock.mockRejectedValue(new Error("boom"));
     prismaMock.providerCallback.update.mockResolvedValue({ id: "wh_fail_2" });
 
