@@ -1,0 +1,82 @@
+{
+  "nav": {
+    "title": "PayIQ Internal",
+    "webhookDeliveries": "Webhook Deliveries"
+  },
+  "theme": {
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System"
+  },
+  "summary": {
+    "total": "Total",
+    "delivered": "Delivered",
+    "retrying": "Retrying",
+    "dead": "Dead",
+    "last24h": "Last 24h",
+    "last24hDelivered": "24h Delivered",
+    "last24hDead": "24h Dead",
+    "processing": "Processing",
+    "pending": "Pending"
+  },
+  "filters": {
+    "title": "Filters",
+    "status": "Status",
+    "allStatuses": "All Statuses",
+    "eventType": "Event Type",
+    "merchantReference": "Merchant Reference",
+    "publicId": "Public ID",
+    "pageSize": "Page Size",
+    "apply": "Apply",
+    "reset": "Reset"
+  },
+  "table": {
+    "title": "Deliveries",
+    "records": "{n} records",
+    "loading": "Loading...",
+    "empty": "No deliveries found",
+    "status": "Status",
+    "event": "Event",
+    "merchantRef": "Merchant Reference",
+    "attempt": "Attempt",
+    "response": "Response",
+    "createdAt": "Created",
+    "target": "Target URL"
+  },
+  "pagination": {
+    "previous": "Previous",
+    "next": "Next",
+    "page": "Page {current} of {total}"
+  },
+  "detail": {
+    "title": "Delivery Detail",
+    "selectRow": "Click a row to inspect details",
+    "retry": "Retry",
+    "retrying": "Queuing...",
+    "overview": "Overview",
+    "payment": "Payment",
+    "requestBody": "Request Body",
+    "responseBody": "Response Body",
+    "requestHeaders": "Request Headers",
+    "responseHeaders": "Response Headers",
+    "id": "ID",
+    "status": "Status",
+    "eventType": "Event Type",
+    "attemptNumber": "Attempt #",
+    "createdAt": "Created At",
+    "deliveredAt": "Delivered At",
+    "nextAttemptAt": "Next Attempt At",
+    "lastError": "Last Error",
+    "publicId": "Public ID",
+    "merchantReference": "Merchant Reference",
+    "merchantOrderId": "Merchant Order ID",
+    "paymentStatus": "Payment Status",
+    "providerReference": "Provider Reference",
+    "providerTransactionId": "Provider Txn ID"
+  },
+  "actions": {
+    "refresh": "Refresh",
+    "redriveSuccess": "Redrive queued for {id} (previous: {status})",
+    "redriveFailed": "Failed to redrive delivery"
+  }
+}

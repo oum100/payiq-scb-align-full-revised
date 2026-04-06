@@ -666,3 +666,51 @@ model PayloadArchive {
   @@map("payload_archives")
 }
 
+// ─── เพิ่มต่อท้าย prisma/schema.prisma ───────────────────────────────────────
+// Admin auth models สำหรับ Dashboard
+
+model AdminUser {
+  id          String       @id @default(cuid())
+  email       String       @unique
+  name        String?
+  isActive    Boolean      @default(true)
+  lastLoginAt DateTime?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  magicLinks  AdminMagicLink[]
+  sessions    AdminSession[]
+
+  @@map("admin_users")
+}
+
+model AdminMagicLink {
+  id        String    @id @default(cuid())
+  adminId   String
+  tokenHash String    @unique
+  usedAt    DateTime?
+  expiresAt DateTime
+  createdAt DateTime  @default(now())
+
+  admin     AdminUser @relation(fields: [adminId], references: [id], onDelete: Cascade)
+
+  @@index([adminId])
+  @@index([expiresAt])
+  @@map("admin_magic_links")
+}
+
+model AdminSession {
+  id          String    @id @default(cuid())
+  adminId     String
+  sessionHash String    @unique
+  ipAddress   String?
+  userAgent   String?
+  expiresAt   DateTime
+  createdAt   DateTime  @default(now())
+
+  admin       AdminUser @relation(fields: [adminId], references: [id], onDelete: Cascade)
+
+  @@index([adminId])
+  @@index([expiresAt])
+  @@map("admin_sessions")
+}
