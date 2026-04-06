@@ -1,4 +1,4 @@
-import { processProviderCallback } from "~/server/services/callbacks/processProviderCallback";
+import { processProviderCallback } from "../../services/callbacks/processProviderCallback";
 
 type ProcessWebhookInput = {
   provider: string;
