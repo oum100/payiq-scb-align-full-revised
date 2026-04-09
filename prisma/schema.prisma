@@ -203,6 +203,7 @@ model Tenant {
   apiKeys          ApiKey[]
   auditLogs        AuditLog[]
   idempotencyKeys  IdempotencyKey[]
+  tenantUsers      TenantUser[]
 
   @@index([status])
   @@map("tenants")
@@ -664,6 +665,65 @@ model PayloadArchive {
   @@index([webhookDeliveryId])
   @@index([storageDriver, storageKey])
   @@map("payload_archives")
+}
+
+// ─── Tenant Portal Auth ───────────────────────────────────────────────────────
+
+enum TenantUserRole {
+  OWNER
+  ADMIN
+  VIEWER
+}
+
+model TenantUser {
+  id          String         @id @default(cuid())
+  tenantId    String
+  email       String
+  name        String?
+  role        TenantUserRole @default(VIEWER)
+  isActive    Boolean        @default(true)
+  lastLoginAt DateTime?
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  tenant      Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  magicLinks  TenantMagicLink[]
+  sessions    TenantSession[]
+
+  @@unique([tenantId, email])
+  @@index([tenantId])
+  @@map("tenant_users")
+}
+
+model TenantMagicLink {
+  id        String     @id @default(cuid())
+  userId    String
+  tokenHash String     @unique
+  usedAt    DateTime?
+  expiresAt DateTime
+  createdAt DateTime   @default(now())
+
+  user      TenantUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("tenant_magic_links")
+}
+
+model TenantSession {
+  id          String     @id @default(cuid())
+  userId      String
+  sessionHash String     @unique
+  ipAddress   String?
+  userAgent   String?
+  expiresAt   DateTime
+  createdAt   DateTime   @default(now())
+
+  user        TenantUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("tenant_sessions")
 }
 
 // ─── เพิ่มต่อท้าย prisma/schema.prisma ───────────────────────────────────────

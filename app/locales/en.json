@@ -78,5 +78,68 @@
     "refresh": "Refresh",
     "redriveSuccess": "Redrive queued for {id} (previous: {status})",
     "redriveFailed": "Failed to redrive delivery"
+  },
+  "portal": {
+    "title": "Merchant Portal",
+    "nav": {
+      "overview": "Overview",
+      "payments": "Payments",
+      "webhooks": "Webhooks",
+      "apiKeys": "API Keys"
+    },
+    "login": {
+      "heading": "Sign in",
+      "subtitle": "Enter your email to receive a magic sign-in link",
+      "emailLabel": "Email address",
+      "emailPlaceholder": "you@company.com",
+      "sendBtn": "Send sign-in link",
+      "sentTitle": "Check your inbox",
+      "sentSubtitle": "We sent a sign-in link to",
+      "sentHint": "Link expires in 15 minutes · check spam if not received",
+      "sendAnother": "Send another link",
+      "footer": "PayIQ Merchant Portal · Authorized users only",
+      "errors": {
+        "invalid_token": "This sign-in link is invalid.",
+        "token_used": "This link has already been used. Please request a new one.",
+        "token_expired": "This link has expired. Please request a new one.",
+        "inactive": "Your account is inactive. Contact your administrator.",
+        "session_expired": "Your session has expired. Please sign in again.",
+        "error": "Something went wrong. Please try again."
+      }
+    },
+    "callback": {
+      "signingIn": "Signing you in…",
+      "pleaseWait": "Please wait a moment",
+      "success": "Signed in!",
+      "redirecting": "Redirecting to portal…",
+      "backToLogin": "← Back to sign in",
+      "errors": {
+        "invalid_token": { "title": "Link not found", "msg": "This sign-in link is invalid or has expired." },
+        "token_used": { "title": "Link already used", "msg": "This link has been used. Please request a new one." },
+        "token_expired": { "title": "Link expired", "msg": "This link expired after 15 minutes. Please request a new one." },
+        "inactive": { "title": "Account inactive", "msg": "Your account has been deactivated. Contact your administrator." },
+        "no_token": { "title": "No token", "msg": "The sign-in link appears to be incomplete." },
+        "error": { "title": "Something went wrong", "msg": "An unexpected error occurred. Please try again." }
+      }
+    },
+    "dashboard": {
+      "welcome": "Welcome back",
+      "stats": {
+        "total": "Total Payments",
+        "succeeded": "Succeeded",
+        "pending": "Pending",
+        "failed": "Failed"
+      },
+      "quickActions": {
+        "payments": "View Payments",
+        "webhooks": "Webhooks",
+        "apiKeys": "API Keys",
+        "docs": "Documentation"
+      },
+      "recentPayments": "Recent Payments",
+      "viewAll": "View all",
+      "noPayments": "Payment history will appear here"
+    },
+    "signOut": "Sign out"
   }
 }

@@ -32,6 +32,9 @@
         </NuxtLink>
 
         <div class="nav-section-label">Management</div>
+        <NuxtLink to="/admin/tenants" class="nav-item" active-class="nav-item--active">
+          <span class="nav-icon">⬡</span> Tenants
+        </NuxtLink>
         <NuxtLink to="/admin/merchants" class="nav-item" active-class="nav-item--active">
           <span class="nav-icon">◉</span> Merchants
         </NuxtLink>
