@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { TableColumn, TableRow } from '@nuxt/ui'
+definePageMeta({ layout: 'default' })
 const { $t } = useI18n()
 
 useHead({ title: () => `${$t('nav.webhookDeliveries')} — ${$t('nav.title')}` })

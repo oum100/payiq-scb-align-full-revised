@@ -4,7 +4,7 @@
       <!-- Logo -->
       <div class="logo">
         <span class="logo-pay">pay</span><span class="logo-iq">IQ</span>
-        <span class="logo-badge">Admin</span>
+        <span class="logo-badge text-red-100">Administrator</span>
       </div>
 
       <!-- Error banner -->
@@ -49,7 +49,6 @@
         </form>
       </template>
     </div>
-
     <!-- Footer -->
     <p class="footer-note">PayIQ Internal Dashboard · Unauthorized access is prohibited</p>
   </div>
@@ -120,7 +119,7 @@ function reset() {
 .login-card {
   width: 100%;
   max-width: 400px;
-  background: #141414;
+  background: #272727;
   border: 1px solid #242424;
   border-radius: 16px;
   padding: 40px 36px;
