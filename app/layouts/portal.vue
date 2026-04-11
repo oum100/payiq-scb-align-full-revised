@@ -1,7 +1,9 @@
 <script setup lang="ts">
+import { useLocalStore } from '~~/stores/local' // เพิ่มบรรทัดนี้
+
 const { user, fetchUser, logout } = usePortalUser()
 const colorMode = useColorMode()
-const { $getLocale, $switchLocale, $getLocales } = useI18n()
+const { $t, $getLocale, $switchLocale, $getLocales } = useI18n()
 await fetchUser()
 
 const userInitial = computed(() => {
@@ -9,15 +11,19 @@ const userInitial = computed(() => {
   return n[0].toUpperCase()
 })
 
+// Multi-language: Create Language List
 const availableLocales = computed(() =>
-  $getLocales().map((l: { code: string; name?: string }) => ({
-    label: l.name ?? l.code,
-    value: l.code,
-  }))
+  $getLocales().map((l: { code: string; name?: string }) => ({ label: l.name ?? l.code, value: l.code }))
 )
+
+// Multi-language: Current Language with Pinia Store
+const localStore = useLocalStore()
 const currentLocale = computed({
-  get: () => $getLocale(),
-  set: (val: string) => $switchLocale(val),
+  get: () => localStore.currentLocale || $getLocale(), // ดึงค่าจาก Pinia store ก่อน ถ้าไม่มีค่อยใช้ค่าเริ่มต้นจาก i18n
+  set: (val: string) => {
+    $switchLocale(val)
+    localStore.setLanguage(val) // บันทึกการตั้งค่าภาษาใน Pinia store
+  },
 })
 
 function toggleColorMode() {
@@ -26,9 +32,10 @@ function toggleColorMode() {
 </script>
 
 <template>
-  <div class="min-h-screen bg-gray-50 dark:bg-neutral-950 transition-colors">
+  <div class="min-h-screen bg-gray-50 dark:bg-neutral-950 transition-colors font-sans">
     <!-- Topbar -->
-    <header class="sticky top-0 z-50 border-b border-gray-200 dark:border-neutral-800 bg-white/90 dark:bg-neutral-900/90 backdrop-blur">
+    <header
+      class="sticky top-0 z-50 border-b border-gray-200 dark:border-neutral-800 bg-white/90 dark:bg-neutral-900/90 backdrop-blur">
       <div class="max-w-screen-xl mx-auto px-6 h-14 flex items-center justify-between gap-4">
         <!-- Logo + Tenant -->
         <div class="flex items-center gap-3">
@@ -42,26 +49,18 @@ function toggleColorMode() {
 
         <!-- Right -->
         <div class="flex items-center gap-2">
-          <USelect
-            v-model="currentLocale"
-            :items="availableLocales"
-            value-key="value"
-            label-key="label"
-            size="sm"
-            class="w-24"
-          />
-          <UButton
-            :icon="colorMode.value === 'dark' ? 'i-heroicons-sun' : 'i-heroicons-moon'"
-            color="neutral" variant="ghost" size="sm"
-            @click="toggleColorMode"
-          />
+          <USelect v-model="currentLocale" :items="availableLocales" value-key="value" label-key="label" size="sm"
+            class="w-24" />
+          <UButton :icon="colorMode.value === 'dark' ? 'i-heroicons-sun' : 'i-heroicons-moon'" color="neutral"
+            variant="ghost" size="sm" @click="toggleColorMode" />
           <UDropdownMenu :items="[[
             { label: user?.email ?? '', disabled: true },
             { type: 'separator' },
             { label: $t('portal.signOut') as string, icon: 'i-heroicons-arrow-right-on-rectangle', onSelect: logout }
           ]]">
             <UButton color="neutral" variant="ghost" size="sm">
-              <div class="w-6 h-6 rounded-full bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-500 text-xs font-bold">
+              <div
+                class="w-6 h-6 rounded-full bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-500 text-xs font-bold">
                 {{ userInitial }}
               </div>
             </UButton>
@@ -110,12 +109,26 @@ function toggleColorMode() {
   margin-bottom: -1px;
   transition: color 0.12s, border-color 0.12s;
 }
-.portal-tab:hover { color: #374151; }
-.dark .portal-tab { color: #9ca3af; }
-.dark .portal-tab:hover { color: #f3f4f6; }
+
+.portal-tab:hover {
+  color: #374151;
+}
+
+.dark .portal-tab {
+  color: #9ca3af;
+}
+
+.dark .portal-tab:hover {
+  color: #f3f4f6;
+}
+
 .portal-tab--active {
   color: #f59e0b;
   border-bottom-color: #f59e0b;
 }
-.dark .portal-tab--active { color: #f59e0b; border-bottom-color: #f59e0b; }
+
+.dark .portal-tab--active {
+  color: #f59e0b;
+  border-bottom-color: #f59e0b;
+}
 </style>

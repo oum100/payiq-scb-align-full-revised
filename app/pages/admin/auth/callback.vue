@@ -1,32 +1,41 @@
 <template>
-  <div class="verify-root">
-    <div class="verify-card">
-      <div class="logo">
-        <span class="logo-pay">pay</span><span class="logo-iq">IQ</span>
+  <div class="min-h-screen bg-gray-50 dark:bg-neutral-950 flex items-center justify-center px-6">
+    <div
+      class="w-full max-w-sm bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-2xl py-11 px-9 text-center">
+      <!-- Logo -->
+      <div class="text-xl font-bold tracking-tight mb-9">
+        <span class="text-gray-900 dark:text-white">pay</span>
+        <span class="text-amber-500">IQ</span>
       </div>
 
       <!-- Loading state -->
       <template v-if="state === 'loading'">
-        <div class="spinner-wrap">
-          <div class="spinner" />
+        <div class="flex justify-center mb-6">
+          <UIcon name="i-heroicons-arrow-path" class="text-4xl text-amber-500 animate-spin" />
         </div>
-        <p class="verify-title">Signing you in…</p>
-        <p class="verify-sub">Please wait a moment</p>
+        <p class="text-base font-semibold text-gray-900 dark:text-white mb-2">Signing you in…</p>
+        <p class="text-sm text-gray-500 dark:text-neutral-400">Please wait a moment</p>
       </template>
 
-      <!-- Success state (brief flash before redirect) -->
+      <!-- Success state -->
       <template v-else-if="state === 'success'">
-        <div class="icon-wrap icon-success">✓</div>
-        <p class="verify-title">Signed in!</p>
-        <p class="verify-sub">Redirecting to dashboard…</p>
+        <div
+          class="w-14 h-14 rounded-full bg-green-100 dark:bg-green-900/30 border-2 border-green-400 dark:border-green-600 flex items-center justify-center mx-auto mb-6 animate-[pop_0.3s_ease-out]">
+          <UIcon name="i-heroicons-check" class="text-2xl text-green-600 dark:text-green-400" />
+        </div>
+        <p class="text-base font-semibold text-gray-900 dark:text-white mb-2">Signed in!</p>
+        <p class="text-sm text-gray-500 dark:text-neutral-400">Redirecting to dashboard…</p>
       </template>
 
       <!-- Error state -->
       <template v-else-if="state === 'error'">
-        <div class="icon-wrap icon-error">✗</div>
-        <p class="verify-title">{{ errorTitle }}</p>
-        <p class="verify-sub">{{ errorMsg }}</p>
-        <NuxtLink to="/admin/login" class="btn-back">← Back to sign in</NuxtLink>
+        <div
+          class="w-14 h-14 rounded-full bg-red-100 dark:bg-red-900/30 border-2 border-red-400 dark:border-red-600 flex items-center justify-center mx-auto mb-6">
+          <UIcon name="i-heroicons-x-mark" class="text-2xl text-red-600 dark:text-red-400" />
+        </div>
+        <p class="text-base font-semibold text-gray-900 dark:text-white mb-2">{{ errorTitle }}</p>
+        <p class="text-sm text-gray-500 dark:text-neutral-400 leading-relaxed mb-6">{{ errorMsg }}</p>
+        <UButton to="/admin/login" color="neutral" variant="outline" size="sm">← Back to sign in</UButton>
       </template>
     </div>
   </div>
@@ -71,7 +80,7 @@ onMounted(async () => {
 
   // ถ้า server redirect มาพร้อม ?error= แล้ว
   if (errorCode) {
-    const mapped = ERROR_MAP[errorCode] ?? ERROR_MAP.error
+    const mapped = ERROR_MAP[errorCode] ?? ERROR_MAP["error"]!
     errorTitle.value = mapped.title
     errorMsg.value = mapped.msg
     state.value = "error"
@@ -90,7 +99,7 @@ onMounted(async () => {
   // แต่ถ้า fetch ใน client จะไม่ follow redirect โดยอัตโนมัติ
   // จึงเรียก API แยกแล้ว navigate เอง
   try {
-    await $fetch(`/api/admin/auth/callback?token=${token}`, {
+    await $fetch(`/api/admin/auth/verify?token=${token}`, {
       // server จะ set cookie ผ่าน response headers
       credentials: "include",
     })
@@ -99,145 +108,10 @@ onMounted(async () => {
     await navigateTo("/admin")
   } catch (err: any) {
     const code = err?.data?.code ?? "error"
-    const mapped = ERROR_MAP[code] ?? ERROR_MAP.error
+    const mapped = ERROR_MAP[code] ?? ERROR_MAP["error"]!
     errorTitle.value = mapped.title
     errorMsg.value = mapped.msg
     state.value = "error"
   }
 })
 </script>
-
-<style scoped>
-.verify-root {
-  min-height: 100vh;
-  background: #0a0a0a;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 24px;
-  font-family: 'DM Sans', 'Helvetica Neue', sans-serif;
-}
-
-.verify-card {
-  width: 100%;
-  max-width: 360px;
-  background: #141414;
-  border: 1px solid #242424;
-  border-radius: 16px;
-  padding: 44px 36px;
-  text-align: center;
-}
-
-.logo {
-  font-size: 20px;
-  font-weight: 700;
-  letter-spacing: -0.5px;
-  margin-bottom: 36px;
-}
-
-.logo-pay {
-  color: #e8e8e8;
-}
-
-.logo-iq {
-  color: #f59e0b;
-}
-
-/* ── Spinner ── */
-.spinner-wrap {
-  display: flex;
-  justify-content: center;
-  margin-bottom: 24px;
-}
-
-.spinner {
-  width: 40px;
-  height: 40px;
-  border: 3px solid #2a2a2a;
-  border-top-color: #f59e0b;
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-/* ── Icon states ── */
-.icon-wrap {
-  width: 52px;
-  height: 52px;
-  border-radius: 50%;
-  font-size: 22px;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 auto 24px;
-}
-
-.icon-success {
-  background: #0f2a1a;
-  color: #22c55e;
-  border: 2px solid #155233;
-  animation: pop 0.3s ease-out;
-}
-
-.icon-error {
-  background: #2a0f0f;
-  color: #ef4444;
-  border: 2px solid #521515;
-}
-
-@keyframes pop {
-  0% {
-    transform: scale(0.6);
-    opacity: 0;
-  }
-
-  70% {
-    transform: scale(1.1);
-  }
-
-  100% {
-    transform: scale(1);
-    opacity: 1;
-  }
-}
-
-/* ── Text ── */
-.verify-title {
-  font-size: 18px;
-  font-weight: 600;
-  color: #f0f0f0;
-  margin: 0 0 8px;
-  letter-spacing: -0.2px;
-}
-
-.verify-sub {
-  font-size: 14px;
-  color: #555;
-  margin: 0;
-  line-height: 1.6;
-}
-
-/* ── Back button ── */
-.btn-back {
-  display: inline-block;
-  margin-top: 24px;
-  font-size: 13px;
-  color: #666;
-  text-decoration: none;
-  padding: 9px 16px;
-  border: 1px solid #242424;
-  border-radius: 7px;
-  transition: color 0.15s, border-color 0.15s;
-}
-
-.btn-back:hover {
-  color: #f59e0b;
-  border-color: #333;
-}
-</style>

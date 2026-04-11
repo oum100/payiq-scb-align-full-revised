@@ -1,119 +1,446 @@
 <template>
   <div>
-    <div class="page-header">
-      <button class="back-btn" @click="$router.back()">← Back</button>
-      <div class="header-main">
-        <h1 class="page-title">{{ payment?.publicId }}</h1>
-        <span v-if="payment" class="status-badge" :class="statusClass(payment.status)">{{ payment.status }}</span>
+    <!-- Page header -->
+    <div class="mb-6">
+      <UButton icon="i-heroicons-arrow-left" color="neutral" variant="ghost" size="sm" class="mb-3 -ml-1"
+        @click="$router.back()">{{ $t('admin.paymentDetail.back') }}</UButton>
+      <div class="flex flex-wrap items-center gap-3">
+        <h1 class="text-xl font-semibold tracking-tight font-mono text-gray-900 dark:text-white">{{ payment?.publicId }}
+        </h1>
+        <!-- Copy publicId button -->
+        <UButton v-if="payment" :icon="copiedId === '__publicId__' ? 'i-lucide-check' : 'i-lucide-copy'"
+          :color="copiedId === '__publicId__' ? 'success' : 'neutral'" variant="ghost" size="xs"
+          :title="$t('admin.paymentDetail.copy')" @click="copy(payment.publicId, '__publicId__')" />
+        <UBadge v-if="payment" :color="statusBadgeColor(payment.status)" variant="subtle"
+          class="font-semibold tracking-wide">
+          {{ payment.status }}
+        </UBadge>
+        <UBadge v-if="payment" :color="payment.environment === 'LIVE' ? 'success' : 'warning'" variant="soft" size="sm"
+          class="font-bold tracking-wide">{{ payment.environment }}</UBadge>
       </div>
     </div>
 
-    <div v-if="pending" class="loading">Loading…</div>
-    <div v-else-if="!payment" class="empty">Payment not found</div>
+    <div v-if="pending" class="py-10 text-center text-sm text-gray-500 dark:text-neutral-400">{{
+      $t('admin.paymentDetail.loading') }}</div>
+    <div v-else-if="!payment" class="py-10 text-center text-sm text-gray-500 dark:text-neutral-400">{{
+      $t('admin.paymentDetail.notFound') }}</div>
+
     <template v-else>
-      <!-- Details grid -->
-      <div class="detail-grid">
-        <div class="detail-card">
-          <div class="card-title">Payment Info</div>
-          <div class="kv-list">
-            <div class="kv"><span class="k">Amount</span><span class="v v-amount">฿{{ fmtAmount(payment.amount) }}</span></div>
-            <div class="kv"><span class="k">Currency</span><span class="v">{{ payment.currency }}</span></div>
-            <div class="kv"><span class="k">Method</span><span class="v">{{ payment.paymentMethodType }}</span></div>
-            <div class="kv"><span class="k">Provider</span><span class="v">{{ payment.providerCode ?? "—" }}</span></div>
-            <div class="kv"><span class="k">Environment</span><span class="v">
-              <span class="env-badge" :class="payment.environment === 'LIVE' ? 'env-live' : 'env-test'">{{ payment.environment }}</span>
-            </span></div>
-          </div>
-        </div>
+      <!-- Detail cards -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 mb-5">
 
-        <div class="detail-card">
-          <div class="card-title">References</div>
-          <div class="kv-list">
-            <div class="kv"><span class="k">Public ID</span><span class="v v-mono">{{ payment.publicId }}</span></div>
-            <div class="kv"><span class="k">Order ID</span><span class="v v-mono">{{ payment.merchantOrderId ?? "—" }}</span></div>
-            <div class="kv"><span class="k">Merchant Ref</span><span class="v v-mono">{{ payment.merchantReference ?? "—" }}</span></div>
-            <div class="kv"><span class="k">Provider Txn</span><span class="v v-mono">{{ payment.providerTransactionId ?? "—" }}</span></div>
-            <div class="kv"><span class="k">Provider Ref</span><span class="v v-mono">{{ payment.providerReference ?? "—" }}</span></div>
-          </div>
-        </div>
+        <!-- Payment Info -->
+        <UCard>
+          <template #header>
+            <p class="text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-neutral-400">{{
+              $t('admin.paymentDetail.paymentInfo') }}</p>
+          </template>
+          <dl class="flex flex-col gap-2.5">
+            <div class="flex justify-between items-start gap-3">
+              <dt class="text-sm text-gray-500 dark:text-neutral-400 flex-shrink-0">{{ $t('admin.paymentDetail.amount')
+                }}</dt>
+              <dd class="text-base font-bold text-gray-900 dark:text-white">฿{{ fmtAmount(payment.amount) }}</dd>
+            </div>
+            <div class="flex justify-between items-start gap-3">
+              <dt class="text-sm text-gray-500 dark:text-neutral-400 flex-shrink-0">{{
+                $t('admin.paymentDetail.currency') }}</dt>
+              <dd class="text-sm text-gray-700 dark:text-neutral-200">{{ payment.currency }}</dd>
+            </div>
+            <div class="flex justify-between items-start gap-3">
+              <dt class="text-sm text-gray-500 dark:text-neutral-400 flex-shrink-0">{{ $t('admin.paymentDetail.method')
+                }}</dt>
+              <dd class="text-sm text-gray-700 dark:text-neutral-200">{{ payment.paymentMethodType ?? '—' }}</dd>
+            </div>
+            <div class="flex justify-between items-start gap-3">
+              <dt class="text-sm text-gray-500 dark:text-neutral-400 flex-shrink-0">{{
+                $t('admin.paymentDetail.provider') }}</dt>
+              <dd class="text-sm text-gray-700 dark:text-neutral-200">{{ payment.providerCode ?? '—' }}</dd>
+            </div>
+            <div v-if="payment.description" class="flex justify-between items-start gap-3">
+              <dt class="text-sm text-gray-500 dark:text-neutral-400 flex-shrink-0">{{
+                $t('admin.paymentDetail.description') }}
+              </dt>
+              <dd class="text-sm text-gray-600 dark:text-neutral-300 text-right break-words max-w-[60%]">{{
+                payment.description }}
+              </dd>
+            </div>
+          </dl>
+        </UCard>
 
-        <div class="detail-card">
-          <div class="card-title">Timestamps</div>
-          <div class="kv-list">
-            <div class="kv"><span class="k">Created</span><span class="v">{{ fmtDate(payment.createdAt) }}</span></div>
-            <div class="kv"><span class="k">Expires</span><span class="v">{{ payment.expiresAt ? fmtDate(payment.expiresAt) : "—" }}</span></div>
-            <div class="kv"><span class="k">Succeeded</span><span class="v v-green">{{ payment.succeededAt ? fmtDate(payment.succeededAt) : "—" }}</span></div>
-            <div class="kv"><span class="k">Failed</span><span class="v v-red">{{ payment.failedAt ? fmtDate(payment.failedAt) : "—" }}</span></div>
-          </div>
-        </div>
+        <!-- References — with copy buttons -->
+        <UCard>
+          <template #header>
+            <p class="text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-neutral-400">{{
+              $t('admin.paymentDetail.references') }}</p>
+          </template>
+          <dl class="flex flex-col gap-1.5">
+            <div v-for="ref in refItems" :key="ref.key" class="flex justify-between items-center gap-2 group">
+              <dt class="text-sm text-gray-500 dark:text-neutral-400 flex-shrink-0">{{ ref.label }}</dt>
+              <div class="flex items-center gap-1 min-w-0">
+                <dd class="font-sans text-sm text-gray-600 dark:text-neutral-300 text-right break-all truncate">{{
+                  ref.value }}
+                </dd>
+                <UButton v-if="ref.value !== '—'" :icon="copiedId === ref.key ? 'i-lucide-check' : 'i-lucide-copy'"
+                  :color="copiedId === ref.key ? 'success' : 'neutral'" variant="ghost" size="xs"
+                  class="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                  @click="copy(ref.value, ref.key)" />
+              </div>
+            </div>
+          </dl>
+        </UCard>
 
-        <div class="detail-card">
-          <div class="card-title">Customer</div>
-          <div class="kv-list">
-            <div class="kv"><span class="k">Name</span><span class="v">{{ payment.customerName ?? "—" }}</span></div>
-            <div class="kv"><span class="k">Email</span><span class="v">{{ payment.customerEmail ?? "—" }}</span></div>
-            <div class="kv"><span class="k">Phone</span><span class="v">{{ payment.customerPhone ?? "—" }}</span></div>
-            <div class="kv"><span class="k">Merchant</span><span class="v">{{ payment.merchantAccount?.name ?? "—" }}</span></div>
-          </div>
-        </div>
+        <!-- Timestamps -->
+        <UCard>
+          <template #header>
+            <p class="text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-neutral-400">{{
+              $t('admin.paymentDetail.timestamps') }}</p>
+          </template>
+          <dl class="flex flex-col gap-2.5">
+            <div class="flex justify-between items-start gap-3">
+              <dt class="text-sm text-gray-500 dark:text-neutral-400 flex-shrink-0">{{ $t('admin.paymentDetail.created')
+                }}</dt>
+              <dd class="text-sm text-gray-700 dark:text-neutral-200 text-right">{{ fmtDate(payment.createdAt) }}</dd>
+            </div>
+            <div class="flex justify-between items-start gap-3">
+              <dt class="text-sm text-gray-500 dark:text-neutral-400 flex-shrink-0">{{ $t('admin.paymentDetail.expires')
+                }}</dt>
+              <dd class="text-sm text-gray-700 dark:text-neutral-200 text-right">{{ payment.expiresAt ?
+                fmtDate(payment.expiresAt) : '—' }}</dd>
+            </div>
+            <div class="flex justify-between items-start gap-3">
+              <dt class="text-sm text-gray-500 dark:text-neutral-400 flex-shrink-0">{{
+                $t('admin.paymentDetail.succeeded') }}
+              </dt>
+              <dd class="text-sm text-green-600 dark:text-green-400 text-right">{{ payment.succeededAt ?
+                fmtDate(payment.succeededAt) : '—' }}</dd>
+            </div>
+            <div class="flex justify-between items-start gap-3">
+              <dt class="text-sm text-gray-500 dark:text-neutral-400 flex-shrink-0">{{ $t('admin.paymentDetail.failed')
+                }}</dt>
+              <dd class="text-sm text-red-500 dark:text-red-400 text-right">{{ payment.failedAt ?
+                fmtDate(payment.failedAt) :
+                '—' }}</dd>
+            </div>
+          </dl>
+        </UCard>
+
+        <!-- Customer + Merchant -->
+        <UCard>
+          <template #header>
+            <p class="text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-neutral-400">{{
+              $t('admin.paymentDetail.customer') }}</p>
+          </template>
+          <dl class="flex flex-col gap-2.5">
+            <div v-for="field in [
+              { label: $t('admin.paymentDetail.name'), value: payment.customerName ?? '—' },
+              { label: $t('admin.paymentDetail.email'), value: payment.customerEmail ?? '—' },
+              { label: $t('admin.paymentDetail.phone'), value: payment.customerPhone ?? '—' },
+              { label: $t('admin.paymentDetail.merchant'), value: payment.merchantAccount?.name ?? '—' },
+              { label: $t('admin.paymentDetail.tenant'), value: payment.tenant?.name ?? payment.tenant?.code ?? '—' },
+            ]" :key="field.label" class="flex justify-between items-start gap-3">
+              <dt class="text-sm text-gray-500 dark:text-neutral-400 flex-shrink-0">{{ field.label }}</dt>
+              <dd class="text-sm text-gray-700 dark:text-neutral-200 text-right break-all">{{ field.value }}</dd>
+            </div>
+          </dl>
+        </UCard>
       </div>
 
-      <!-- Event timeline -->
-      <div class="section-card">
-        <div class="section-title">Event timeline</div>
-        <div class="timeline">
-          <div v-for="ev in payment.events" :key="ev.id" class="timeline-item">
-            <div class="tl-dot" />
-            <div class="tl-body">
-              <div class="tl-header">
-                <span class="tl-type">{{ ev.type }}</span>
-                <span class="tl-time">{{ fmtDate(ev.createdAt) }}</span>
+      <!-- Provider Callbacks -->
+      <UCard v-if="payment.providerCallbacks?.length" class="mb-4" :ui="{ body: 'p-0' }">
+        <template #header>
+          <p class="text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-neutral-400">{{
+            $t('admin.paymentDetail.providerCallbacks') }}</p>
+        </template>
+        <div class="overflow-x-auto">
+          <table class="w-full border-collapse">
+            <thead>
+              <tr class="border-b border-gray-200 dark:border-neutral-800">
+                <th
+                  class="px-4 py-2 text-left text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-neutral-200">
+                  {{ $t('admin.paymentDetail.providerRef') }}</th>
+                <th
+                  class="px-4 py-2 text-left text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-neutral-200">
+                  {{ $t('admin.paymentDetail.providerTxn') }}</th>
+                <th
+                  class="px-4 py-2 text-left text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-neutral-200">
+                  {{ $t('admin.paymentDetail.signatureValid') }}</th>
+                <th
+                  class="px-4 py-2 text-left text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-neutral-200">
+                  {{ $t('admin.paymentDetail.processStatus') }}</th>
+                <th
+                  class="px-4 py-2 text-left text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-neutral-200">
+                  {{ $t('admin.paymentDetail.receivedAt') }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="cb in payment.providerCallbacks" :key="cb.id"
+                class="border-b border-gray-100 dark:border-neutral-800/60 last:border-0">
+                <td class="px-4 py-2.5 font-mono text-sm text-gray-600 dark:text-neutral-300">{{ cb.providerReference ??
+                  '—'
+                  }}</td>
+                <td class="px-4 py-2.5 font-mono text-sm text-gray-600 dark:text-neutral-300">{{ cb.providerTxnId ?? '—'
+                  }}
+                </td>
+                <td class="px-4 py-2.5">
+                  <UBadge :color="cb.signatureValid ? 'success' : 'error'" variant="subtle" size="xs">
+                    {{ cb.signatureValid ? '✓ Valid' : '✗ Invalid' }}
+                  </UBadge>
+                </td>
+                <td class="px-4 py-2.5">
+                  <UBadge
+                    :color="cb.processStatus === 'PROCESSED' ? 'success' : cb.processStatus === 'FAILED' ? 'error' : 'warning'"
+                    variant="subtle" size="xs" class="font-semibold">{{ cb.processStatus }}</UBadge>
+                </td>
+                <td class="px-4 py-2.5 text-sm text-gray-500 dark:text-neutral-400">{{ cb.receivedAt ?
+                  fmtDate(cb.receivedAt)
+                  : '—' }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </UCard>
+
+      <!-- Timeline + Detail Panel (unified) -->
+      <UCard class="mb-4" :ui="{ body: 'p-0' }">
+        <template #header>
+          <p class="text-[11px] font-semibold uppercase tracking-wide text-gray-500 dark:text-neutral-400">{{ $t('admin.paymentDetail.eventTimeline') }}</p>
+        </template>
+        <div class="flex flex-col lg:flex-row" style="min-height: 360px;">
+
+          <!-- Left: Timeline event list -->
+          <div class="w-full lg:w-72 xl:w-80 flex-shrink-0 border-b lg:border-b-0 lg:border-r border-gray-200 dark:border-neutral-800 overflow-y-auto">
+            <div
+              v-for="(ev, idx) in payment.events"
+              :key="ev.id"
+              class="flex items-start gap-3 px-4 py-3 cursor-pointer border-b border-gray-100 dark:border-neutral-800/50 last:border-0 hover:bg-gray-50 dark:hover:bg-neutral-800/40 transition-colors"
+              :class="selectedEventId === ev.id ? 'bg-primary-50 dark:bg-primary-950/30 border-l-2 border-l-primary-500' : 'border-l-2 border-l-transparent'"
+              @click="selectEvent(ev.id)"
+            >
+              <!-- Dot + connector line -->
+              <div class="flex flex-col items-center flex-shrink-0 mt-0.5">
+                <div class="w-2.5 h-2.5 rounded-full flex-shrink-0" :class="dotColorClass(ev)" />
+                <div v-if="idx < payment.events.length - 1" class="w-px bg-gray-200 dark:bg-neutral-700 mt-1" style="height: 20px;" />
               </div>
-              <div v-if="ev.fromStatus || ev.toStatus" class="tl-transition">
-                <span v-if="ev.fromStatus" class="tl-from">{{ ev.fromStatus }}</span>
-                <span v-if="ev.fromStatus && ev.toStatus" class="tl-arrow">→</span>
-                <span v-if="ev.toStatus" class="status-badge sm" :class="statusClass(ev.toStatus)">{{ ev.toStatus }}</span>
+              <!-- Event info -->
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center justify-between gap-1 mb-0.5">
+                  <span class="text-sm font-medium text-gray-800 dark:text-neutral-200 truncate">{{ ev.type }}</span>
+                  <UIcon v-if="selectedEventId === ev.id" name="i-lucide-chevron-right" class="w-3.5 h-3.5 text-primary-500 flex-shrink-0" />
+                </div>
+                <div class="flex items-center gap-2 flex-wrap">
+                  <UBadge v-if="ev.toStatus" :color="statusBadgeColor(ev.toStatus)" variant="subtle" size="xs" class="font-semibold">{{ ev.toStatus }}</UBadge>
+                  <span class="text-xs text-gray-400 dark:text-neutral-500">{{ fmtDate(ev.createdAt) }}</span>
+                </div>
               </div>
-              <div v-if="ev.summary" class="tl-summary">{{ ev.summary }}</div>
+            </div>
+            <p v-if="!payment.events?.length" class="px-4 py-6 text-sm text-gray-400 dark:text-neutral-500 text-center">{{ $t('admin.paymentDetail.noEvents') }}</p>
+          </div>
+
+          <!-- Right: Detail panel -->
+          <div class="flex-1 min-w-0 overflow-y-auto">
+            <!-- No selection placeholder -->
+            <div v-if="!selectedEvent" class="flex flex-col items-center justify-center h-full gap-2 py-16 text-gray-400 dark:text-neutral-500">
+              <UIcon name="i-lucide-mouse-pointer-click" class="w-8 h-8" />
+              <p class="text-sm">{{ $t('admin.paymentDetail.selectEvent') }}</p>
+            </div>
+
+            <div v-else class="p-4 flex flex-col gap-4">
+              <!-- Event summary -->
+              <div>
+                <div class="flex items-center gap-2 mb-1">
+                  <UIcon :name="eventIcon(selectedEvent.type)" class="w-4 h-4 flex-shrink-0" :class="dotColorClass(selectedEvent).replace('bg-', 'text-')" />
+                  <span class="text-sm font-semibold text-gray-800 dark:text-neutral-100">{{ selectedEvent.type }}</span>
+                </div>
+                <p v-if="selectedEvent.summary" class="text-sm text-gray-500 dark:text-neutral-400 ml-6">{{ selectedEvent.summary }}</p>
+                <div v-if="selectedEvent.fromStatus || selectedEvent.toStatus" class="flex items-center gap-2 mt-1.5 ml-6">
+                  <UBadge v-if="selectedEvent.fromStatus" :color="statusBadgeColor(selectedEvent.fromStatus)" variant="soft" size="xs">{{ selectedEvent.fromStatus }}</UBadge>
+                  <UIcon v-if="selectedEvent.fromStatus && selectedEvent.toStatus" name="i-lucide-arrow-right" class="w-3 h-3 text-gray-400" />
+                  <UBadge v-if="selectedEvent.toStatus" :color="statusBadgeColor(selectedEvent.toStatus)" variant="subtle" size="xs" class="font-semibold">{{ selectedEvent.toStatus }}</UBadge>
+                </div>
+              </div>
+
+              <!-- QR Code (shown for PROVIDER_ACCEPTED / AWAITING_CUSTOMER events) -->
+              <div v-if="selectedEventShowsQR && payment.qrPayload" class="rounded-lg border border-gray-200 dark:border-neutral-700 overflow-hidden">
+                <div class="flex items-center justify-between px-4 py-2 bg-gray-50 dark:bg-neutral-900/60 border-b border-gray-200 dark:border-neutral-700">
+                  <span class="text-[11px] font-semibold uppercase tracking-wide text-gray-500 dark:text-neutral-400">{{ $t('admin.paymentDetail.qrCode') }}</span>
+                  <div class="flex items-center gap-1">
+                    <UButton :icon="copiedId === '__qrPayload__' ? 'i-lucide-check' : 'i-lucide-copy'" :color="copiedId === '__qrPayload__' ? 'success' : 'neutral'" variant="ghost" size="xs" :title="$t('admin.paymentDetail.copyQrText')" @click="copy(payment.qrPayload, '__qrPayload__')" />
+                    <UButton :icon="downloadingQR ? 'i-lucide-loader-circle' : 'i-lucide-download'" color="neutral" variant="ghost" size="xs" :title="$t('admin.paymentDetail.downloadQr')" :disabled="downloadingQR" @click="downloadQR" />
+                  </div>
+                </div>
+                <div class="p-4 flex flex-col sm:flex-row items-start gap-4">
+                  <div class="bg-white rounded-lg p-3 border border-gray-200 dark:border-neutral-600 flex-shrink-0">
+                    <img :src="qrImageUrl" alt="PromptPay QR" width="160" height="160" class="rounded" />
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <p class="text-xs text-gray-500 dark:text-neutral-400 mb-1.5">{{ $t('admin.paymentDetail.qrPayload') }}</p>
+                    <pre class="font-mono text-xs text-gray-700 dark:text-neutral-300 bg-gray-50 dark:bg-neutral-900 border border-gray-200 dark:border-neutral-700 rounded px-3 py-2 overflow-x-auto whitespace-pre-wrap break-all">{{ payment.qrPayload }}</pre>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Provider Attempt detail (req/res) -->
+              <div v-if="selectedAttempt" class="rounded-lg border border-gray-200 dark:border-neutral-700 overflow-hidden">
+                <div class="flex items-center gap-3 px-4 py-2 bg-gray-50 dark:bg-neutral-900/60 border-b border-gray-200 dark:border-neutral-700">
+                  <span class="text-[11px] font-semibold uppercase tracking-wide text-gray-500 dark:text-neutral-400">{{ selectedAttempt.type }}</span>
+                  <UBadge :color="selectedAttempt.status === 'SUCCEEDED' ? 'success' : 'error'" variant="subtle" size="xs" class="font-semibold">{{ selectedAttempt.status }}</UBadge>
+                  <span class="text-xs text-gray-500 dark:text-neutral-400">HTTP {{ selectedAttempt.httpStatusCode ?? '—' }}</span>
+                  <span class="text-xs text-gray-400 dark:text-neutral-500 ml-auto">{{ selectedAttempt.sentAt ? fmtDate(selectedAttempt.sentAt) : '—' }}</span>
+                </div>
+                <div class="grid grid-cols-1 lg:grid-cols-2">
+                  <!-- Request -->
+                  <div class="border-b lg:border-b-0 lg:border-r border-gray-100 dark:border-neutral-800">
+                    <div class="px-4 py-1.5 border-b border-gray-100 dark:border-neutral-800">
+                      <span class="text-[11px] font-semibold uppercase tracking-wide text-blue-600 dark:text-blue-400">↑ Request</span>
+                    </div>
+                    <div class="p-3 flex flex-col gap-3">
+                      <div>
+                        <p class="text-xs font-semibold text-gray-500 dark:text-neutral-400 mb-1">{{ $t('admin.paymentDetail.requestHeaders') }}</p>
+                        <pre class="font-mono text-xs text-gray-700 dark:text-neutral-300 bg-gray-50 dark:bg-neutral-900 border border-gray-200 dark:border-neutral-700 rounded px-3 py-2 overflow-auto max-h-40 whitespace-pre-wrap">{{ fmtJson(selectedAttempt.requestHeaders) }}</pre>
+                      </div>
+                      <div>
+                        <p class="text-xs font-semibold text-gray-500 dark:text-neutral-400 mb-1">{{ $t('admin.paymentDetail.requestBody') }}</p>
+                        <pre class="font-mono text-xs text-gray-700 dark:text-neutral-300 bg-gray-50 dark:bg-neutral-900 border border-gray-200 dark:border-neutral-700 rounded px-3 py-2 overflow-auto max-h-48 whitespace-pre-wrap">{{ fmtJson(selectedAttempt.requestBody) }}</pre>
+                      </div>
+                    </div>
+                  </div>
+                  <!-- Response -->
+                  <div>
+                    <div class="px-4 py-1.5 border-b border-gray-100 dark:border-neutral-800">
+                      <span class="text-[11px] font-semibold uppercase tracking-wide text-green-600 dark:text-green-400">↓ Response</span>
+                    </div>
+                    <div class="p-3 flex flex-col gap-3">
+                      <div>
+                        <p class="text-xs font-semibold text-gray-500 dark:text-neutral-400 mb-1">{{ $t('admin.paymentDetail.responseHeaders') }}</p>
+                        <pre class="font-mono text-xs text-gray-700 dark:text-neutral-300 bg-gray-50 dark:bg-neutral-900 border border-gray-200 dark:border-neutral-700 rounded px-3 py-2 overflow-auto max-h-40 whitespace-pre-wrap">{{ fmtJson(selectedAttempt.responseHeaders) }}</pre>
+                      </div>
+                      <div>
+                        <p class="text-xs font-semibold text-gray-500 dark:text-neutral-400 mb-1">{{ $t('admin.paymentDetail.responseBody') }}</p>
+                        <pre class="font-mono text-xs text-gray-700 dark:text-neutral-300 bg-gray-50 dark:bg-neutral-900 border border-gray-200 dark:border-neutral-700 rounded px-3 py-2 overflow-auto max-h-48 whitespace-pre-wrap">{{ fmtJson(selectedAttempt.responseBody) }}</pre>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Provider Callback detail -->
+              <div v-if="selectedCallback" class="rounded-lg border border-gray-200 dark:border-neutral-700 overflow-hidden">
+                <div class="px-4 py-2 bg-gray-50 dark:bg-neutral-900/60 border-b border-gray-200 dark:border-neutral-700">
+                  <span class="text-[11px] font-semibold uppercase tracking-wide text-gray-500 dark:text-neutral-400">{{ $t('admin.paymentDetail.providerCallbacks') }}</span>
+                </div>
+                <div class="p-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div v-for="field in [
+                    { label: $t('admin.paymentDetail.providerRef'), value: selectedCallback.providerReference ?? '—' },
+                    { label: $t('admin.paymentDetail.providerTxn'), value: selectedCallback.providerTxnId ?? '—' },
+                    { label: $t('admin.paymentDetail.signatureValid'), value: selectedCallback.signatureValid ? '✓ Valid' : '✗ Invalid' },
+                    { label: $t('admin.paymentDetail.processStatus'), value: selectedCallback.processStatus },
+                    { label: $t('admin.paymentDetail.receivedAt'), value: fmtDate(selectedCallback.receivedAt) },
+                  ]" :key="field.label" class="flex flex-col gap-0.5">
+                    <span class="text-xs text-gray-500 dark:text-neutral-400">{{ field.label }}</span>
+                    <span class="font-mono text-sm text-gray-700 dark:text-neutral-200">{{ field.value }}</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Webhook Delivery detail -->
+              <div v-if="selectedWebhookDelivery" class="rounded-lg border border-gray-200 dark:border-neutral-700 overflow-hidden">
+                <div class="flex items-center gap-3 px-4 py-2 bg-gray-50 dark:bg-neutral-900/60 border-b border-gray-200 dark:border-neutral-700">
+                  <span class="text-[11px] font-semibold uppercase tracking-wide text-gray-500 dark:text-neutral-400">{{ $t('admin.paymentDetail.webhookDeliveries') }}</span>
+                  <UBadge :color="whkBadgeColor(selectedWebhookDelivery.status)" variant="subtle" size="xs" class="font-semibold">{{ selectedWebhookDelivery.status }}</UBadge>
+                  <span class="text-xs text-gray-500 dark:text-neutral-400">HTTP {{ selectedWebhookDelivery.responseStatusCode ?? '—' }}</span>
+                  <span class="text-xs text-gray-400 dark:text-neutral-500 ml-auto">
+                    {{ selectedWebhookDelivery.deliveredAt ? fmtDate(selectedWebhookDelivery.deliveredAt) : selectedWebhookDelivery.lastErrorAt ? fmtDate(selectedWebhookDelivery.lastErrorAt) : '—' }}
+                  </span>
+                </div>
+                <div v-if="selectedWebhookDelivery.errorMessage" class="px-4 py-2 bg-red-50 dark:bg-red-950/20 border-b border-red-200 dark:border-red-900/40">
+                  <span class="text-xs text-red-600 dark:text-red-400">{{ selectedWebhookDelivery.errorMessage }}</span>
+                </div>
+                <div class="grid grid-cols-1 lg:grid-cols-2">
+                  <!-- Request -->
+                  <div class="border-b lg:border-b-0 lg:border-r border-gray-100 dark:border-neutral-800">
+                    <div class="px-4 py-1.5 border-b border-gray-100 dark:border-neutral-800">
+                      <span class="text-[11px] font-semibold uppercase tracking-wide text-blue-600 dark:text-blue-400">↑ Request</span>
+                    </div>
+                    <div class="p-3 flex flex-col gap-3">
+                      <div>
+                        <p class="text-xs font-semibold text-gray-500 dark:text-neutral-400 mb-1">{{ $t('admin.paymentDetail.requestHeaders') }}</p>
+                        <pre class="font-mono text-xs text-gray-700 dark:text-neutral-300 bg-gray-50 dark:bg-neutral-900 border border-gray-200 dark:border-neutral-700 rounded px-3 py-2 overflow-auto max-h-40 whitespace-pre-wrap">{{ fmtJson(selectedWebhookDelivery.requestHeaders) }}</pre>
+                      </div>
+                      <div>
+                        <p class="text-xs font-semibold text-gray-500 dark:text-neutral-400 mb-1">{{ $t('admin.paymentDetail.requestBody') }}</p>
+                        <pre class="font-mono text-xs text-gray-700 dark:text-neutral-300 bg-gray-50 dark:bg-neutral-900 border border-gray-200 dark:border-neutral-700 rounded px-3 py-2 overflow-auto max-h-48 whitespace-pre-wrap">{{ fmtJson(selectedWebhookDelivery.requestBody) }}</pre>
+                      </div>
+                    </div>
+                  </div>
+                  <!-- Response -->
+                  <div>
+                    <div class="px-4 py-1.5 border-b border-gray-100 dark:border-neutral-800">
+                      <span class="text-[11px] font-semibold uppercase tracking-wide text-green-600 dark:text-green-400">↓ Response</span>
+                    </div>
+                    <div class="p-3 flex flex-col gap-3">
+                      <div>
+                        <p class="text-xs font-semibold text-gray-500 dark:text-neutral-400 mb-1">{{ $t('admin.paymentDetail.responseHeaders') }}</p>
+                        <pre class="font-mono text-xs text-gray-700 dark:text-neutral-300 bg-gray-50 dark:bg-neutral-900 border border-gray-200 dark:border-neutral-700 rounded px-3 py-2 overflow-auto max-h-40 whitespace-pre-wrap">{{ fmtJson(selectedWebhookDelivery.responseHeaders) }}</pre>
+                      </div>
+                      <div>
+                        <p class="text-xs font-semibold text-gray-500 dark:text-neutral-400 mb-1">{{ $t('admin.paymentDetail.responseBody') }}</p>
+                        <pre class="font-mono text-xs text-gray-700 dark:text-neutral-300 bg-gray-50 dark:bg-neutral-900 border border-gray-200 dark:border-neutral-700 rounded px-3 py-2 overflow-auto max-h-48 whitespace-pre-wrap">{{ fmtJson(selectedWebhookDelivery.responseBody) }}</pre>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
-          <div v-if="!payment.events?.length" class="tl-empty">No events</div>
         </div>
-      </div>
+      </UCard>
 
-      <!-- Provider attempts -->
-      <div v-if="payment.providerAttempts?.length" class="section-card">
-        <div class="section-title">Provider attempts</div>
-        <table class="table">
-          <thead><tr><th>Type</th><th>Status</th><th>HTTP</th><th>Provider Txn</th><th>Sent at</th></tr></thead>
-          <tbody>
-            <tr v-for="a in payment.providerAttempts" :key="a.id">
-              <td class="td-mono">{{ a.type }}</td>
-              <td><span class="status-badge sm" :class="a.status === 'SUCCEEDED' ? 's-green' : 's-red'">{{ a.status }}</span></td>
-              <td class="td-muted">{{ a.httpStatusCode ?? "—" }}</td>
-              <td class="td-mono">{{ a.providerTxnId ?? "—" }}</td>
-              <td class="td-muted">{{ a.sentAt ? fmtDate(a.sentAt) : "—" }}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <!-- Webhook deliveries -->
-      <div v-if="payment.webhookDeliveries?.length" class="section-card">
-        <div class="section-title">Webhook deliveries</div>
-        <table class="table">
-          <thead><tr><th>Event</th><th>Status</th><th>Attempts</th><th>Endpoint</th><th>Created</th></tr></thead>
-          <tbody>
-            <tr v-for="w in payment.webhookDeliveries" :key="w.id">
-              <td class="td-mono">{{ w.eventType }}</td>
-              <td><span class="status-badge sm" :class="whkClass(w.status)">{{ w.status }}</span></td>
-              <td class="td-muted">{{ w.attemptNumber }}</td>
-              <td class="td-mono">{{ w.webhookEndpoint?.code ?? "—" }}</td>
-              <td class="td-muted">{{ fmtDate(w.createdAt) }}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+      <!-- Webhook Deliveries -->
+      <UCard v-if="payment.webhookDeliveries?.length" :ui="{ body: 'p-0' }">
+        <template #header>
+          <p class="text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-neutral-400">{{
+            $t('admin.paymentDetail.webhookDeliveries') }}</p>
+        </template>
+        <div class="overflow-x-auto">
+          <table class="w-full border-collapse">
+            <thead>
+              <tr class="border-b border-gray-200 dark:border-neutral-800">
+                <th
+                  class="px-4 py-2 text-left text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-neutral-200">
+                  Event</th>
+                <th
+                  class="px-4 py-2 text-left text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-neutral-200">
+                  Status</th>
+                <th
+                  class="px-4 py-2 text-left text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-neutral-200">
+                  {{ $t('admin.paymentDetail.attempts') }}</th>
+                <th
+                  class="px-4 py-2 text-left text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-neutral-200">
+                  {{ $t('admin.paymentDetail.endpoint') }}</th>
+                <th
+                  class="px-4 py-2 text-left text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-neutral-200">
+                  {{ $t('admin.paymentDetail.created') }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="w in payment.webhookDeliveries" :key="w.id"
+                class="border-b border-gray-100 dark:border-neutral-800/60 last:border-0">
+                <td class="px-4 py-2.5 font-mono text-sm text-gray-600 dark:text-neutral-300">{{ w.eventType }}</td>
+                <td class="px-4 py-2.5">
+                  <UBadge :color="whkBadgeColor(w.status)" variant="subtle" size="xs" class="font-semibold">{{ w.status
+                    }}
+                  </UBadge>
+                </td>
+                <td class="px-4 py-2.5 text-sm text-gray-500 dark:text-neutral-400">{{ w.attemptNumber }}</td>
+                <td class="px-4 py-2.5 font-mono text-sm text-gray-600 dark:text-neutral-300">{{ w.webhookEndpoint?.code
+                  ??
+                  '—' }}</td>
+                <td class="px-4 py-2.5 text-sm text-gray-500 dark:text-neutral-400">{{ fmtDate(w.createdAt) }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </UCard>
     </template>
   </div>
 </template>
@@ -122,82 +449,180 @@
 definePageMeta({ layout: "admin", middleware: "admin-auth" })
 
 const route = useRoute()
+const { $getLocale, $t } = useI18n()
 const { data, pending } = await useFetch(`/api/admin/payments/${route.params.publicId}`)
 const payment = computed(() => data.value as any)
+
+import { fmtDateTime as fmtDateTimeFn } from '~/utils/fmtDate'
+function fmtDate(iso: string) { return fmtDateTimeFn(iso, $getLocale()) }
 
 function fmtAmount(v: string) {
   return Number(v).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 }
-function fmtDate(iso: string) {
-  return new Date(iso).toLocaleString("en-GB", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit", second: "2-digit" })
+
+// ─── References list (for copy-able card) ────────────────────────────────────
+const refItems = computed(() => [
+  { key: 'publicId', label: $t('admin.paymentDetail.publicId'), value: payment.value?.publicId ?? '—' },
+  { key: 'orderId', label: $t('admin.paymentDetail.orderId'), value: payment.value?.merchantOrderId ?? '—' },
+  { key: 'merchantRef', label: $t('admin.paymentDetail.merchantRef'), value: payment.value?.merchantReference ?? '—' },
+  { key: 'providerTxn', label: $t('admin.paymentDetail.providerTxn'), value: payment.value?.providerTransactionId ?? '—' },
+  { key: 'providerRef', label: $t('admin.paymentDetail.providerRef'), value: payment.value?.providerReference ?? '—' },
+])
+
+// ─── Timeline selection ───────────────────────────────────────────────────────
+const selectedEventId = ref<string>('')
+const selectedEvent = computed(() => payment.value?.events?.find((e: any) => e.id === selectedEventId.value) ?? null)
+function selectEvent(id: string) { selectedEventId.value = selectedEventId.value === id ? '' : id }
+
+// Events that show QR in detail panel (QR was generated at this step)
+const QR_EVENTS = new Set(['PROVIDER_ACCEPTED', 'AWAITING_CUSTOMER'])
+const selectedEventShowsQR = computed(() => selectedEvent.value && QR_EVENTS.has(selectedEvent.value.type))
+
+// Match selected event → providerAttempt
+const selectedAttempt = computed(() => {
+  if (!selectedEvent.value) return null
+  const attempts: any[] = payment.value?.providerAttempts ?? []
+  const t = selectedEvent.value.type
+  if (['PROVIDER_REQUESTED', 'PROVIDER_ACCEPTED'].includes(t))
+    return attempts.find(a => a.type === 'CREATE_QR') ?? null
+  if (['PAYMENT_SUCCEEDED', 'PAYMENT_FAILED', 'PROCESSING'].includes(t))
+    return attempts.find(a => a.type === 'INQUIRY') ?? null
+  return null
+})
+
+// Match selected event → providerCallback
+const selectedCallback = computed(() => {
+  if (!selectedEvent.value) return null
+  if (selectedEvent.value.type === 'PROVIDER_CALLBACK_RECEIVED')
+    return payment.value?.providerCallbacks?.[0] ?? null
+  return null
+})
+
+// Match selected event → webhookDelivery
+const WEBHOOK_EVENT_TYPES = new Set(['WEBHOOK_QUEUED', 'WEBHOOK_DELIVERED', 'WEBHOOK_FAILED'])
+const selectedWebhookDelivery = computed(() => {
+  if (!selectedEvent.value) return null
+  if (!WEBHOOK_EVENT_TYPES.has(selectedEvent.value.type)) return null
+  return payment.value?.webhookDeliveries?.[0] ?? null
+})
+
+// Timeline dot colors
+function dotColorClass(ev: any): string {
+  const c = timelineColor(ev.toStatus, ev.type)
+  return { success: 'bg-green-500', error: 'bg-red-500', warning: 'bg-amber-500', info: 'bg-blue-500', neutral: 'bg-gray-400 dark:bg-neutral-500' }[c] ?? 'bg-gray-400'
 }
-const STATUS_CLASSES: Record<string, string> = {
-  SUCCEEDED: "s-green", FAILED: "s-red", EXPIRED: "s-gray", CANCELLED: "s-gray",
-  AWAITING_CUSTOMER: "s-amber", PROCESSING: "s-purple", CREATED: "s-blue",
-  ROUTING: "s-blue", PENDING_PROVIDER: "s-orange", REVERSED: "s-gray", REFUNDED: "s-gray",
+
+// ─── JSON pretty-print ────────────────────────────────────────────────────────
+function fmtJson(v: any): string {
+  if (v === null || v === undefined) return '—'
+  try { return JSON.stringify(v, null, 2) }
+  catch { return String(v) }
 }
-function statusClass(s: string) { return STATUS_CLASSES[s] ?? "s-gray" }
-function whkClass(s: string) {
-  return s === "DELIVERED" ? "s-green" : s === "DEAD" ? "s-red" : s === "RETRYING" ? "s-amber" : "s-gray"
+
+// ─── Copy to clipboard ────────────────────────────────────────────────────────
+const copiedId = ref('')
+async function copy(text: string, id: string) {
+  if (!text || text === '—') return
+  try {
+    await navigator.clipboard.writeText(text)
+    copiedId.value = id
+    setTimeout(() => { copiedId.value = '' }, 1800)
+  } catch { }
 }
+
+// ─── QR helpers ───────────────────────────────────────────────────────────────
+const qrImageUrl = computed(() => {
+  if (!payment.value?.qrPayload) return ''
+  return `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(payment.value.qrPayload)}&bgcolor=ffffff&color=000000`
+})
+
+const downloadingQR = ref(false)
+async function downloadQR() {
+  if (!payment.value?.qrPayload) return
+  downloadingQR.value = true
+  try {
+    const url = `https://api.qrserver.com/v1/create-qr-code/?size=600x600&data=${encodeURIComponent(payment.value.qrPayload)}&bgcolor=ffffff&color=000000`
+    const res = await fetch(url)
+    const blob = await res.blob()
+    const blobUrl = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = blobUrl
+    a.download = `qr-${payment.value.publicId}.png`
+    a.click()
+    URL.revokeObjectURL(blobUrl)
+  } finally {
+    downloadingQR.value = false
+  }
+}
+
+// ─── Status badge colors ──────────────────────────────────────────────────────
+const STATUS_BADGE_COLORS: Record<string, string> = {
+  SUCCEEDED: "success",
+  FAILED: "error",
+  EXPIRED: "neutral",
+  CANCELLED: "neutral",
+  AWAITING_CUSTOMER: "warning",
+  PROCESSING: "info",
+  CREATED: "neutral",
+  ROUTING: "neutral",
+  PENDING_PROVIDER: "warning",
+  REVERSED: "warning",
+  REFUNDED: "info",
+}
+function statusBadgeColor(s: string): any { return STATUS_BADGE_COLORS[s] ?? "neutral" }
+
+// ─── Timeline dot colors ──────────────────────────────────────────────────────
+const TIMELINE_COLORS: Record<string, string> = {
+  SUCCEEDED: "success",
+  FAILED: "error",
+  EXPIRED: "error",
+  CANCELLED: "error",
+  REVERSED: "error",
+  REFUNDED: "warning",
+  AWAITING_CUSTOMER: "warning",
+  PENDING_PROVIDER: "warning",
+  PROCESSING: "info",
+  CREATED: "info",
+  ROUTING: "info",
+}
+function timelineColor(toStatus?: string, eventType?: string): string {
+  if (toStatus && TIMELINE_COLORS[toStatus]) return TIMELINE_COLORS[toStatus]
+  if (eventType?.includes("SUCCEEDED") || eventType?.includes("COMPLETED")) return "success"
+  if (eventType?.includes("FAILED") || eventType?.includes("ERROR") || eventType?.includes("EXPIRED") || eventType?.includes("CANCELLED") || eventType?.includes("REVERSED")) return "error"
+  if (eventType?.includes("REFUNDED")) return "warning"
+  return "neutral"
+}
+
+function whkBadgeColor(s: string): any {
+  return s === "DELIVERED" ? "success" : s === "DEAD" ? "error" : s === "RETRYING" ? "warning" : "neutral"
+}
+
+// ─── Timeline icon map ────────────────────────────────────────────────────────
+function eventIcon(type: string): string {
+  const icons: Record<string, string> = {
+    PAYMENT_CREATED: "lucide-cross",
+    ROUTE_RESOLVED: "lucide-route",
+    PROVIDER_REQUESTED: "i-lucide-send",
+    PROVIDER_ACCEPTED: "lucide-check-check",
+    ROUTING_STARTED: "lucide-route",
+    ROUTING_COMPLETED: "lucide-arrow-left-right",
+    PROVIDER_REQUEST_SENT: "i-lucide-send",
+    PROVIDER_RESPONSE_RECEIVED: "i-lucide-download",
+    PROVIDER_CALLBACK_RECEIVED: "i-lucide-phone-incoming",
+    STATUS_CHANGED: "i-lucide-refresh-cw",
+    PAYMENT_SUCCEEDED: "lucide-banknote-arrow-up",
+    PAYMENT_FAILED: "lucide-banknote-x",
+    PAYMENT_EXPIRED: "i-lucide-clock",
+    PAYMENT_CANCELLED: "i-lucide-ban",
+    PAYMENT_REVERSED: "i-lucide-rotate-ccw",
+    PAYMENT_REFUNDED: "lucide-banknote-arrow-down",
+    WEBHOOK_SENT: "i-lucide-webhook",
+    WEBHOOK_QUEUED: "lucide-list-end",
+    WEBHOOK_DELIVERED: "lucide-square-check-big",
+    WEBHOOK_FAILED: "i-lucide-webhook",
+    ERROR: "lucide-x",
+  }
+  return icons[type] ?? "lucide-circle-question-mark  "
+}
+
 </script>
-
-<style scoped>
-.page-header { margin-bottom: 24px; }
-.back-btn { background: none; border: none; color: #555; font-size: 13px; cursor: pointer; padding: 0; margin-bottom: 12px; font-family: inherit; transition: color 0.15s; }
-.back-btn:hover { color: #f59e0b; }
-.header-main { display: flex; align-items: center; gap: 12px; }
-.page-title { font-size: 20px; font-weight: 600; color: #f0f0f0; letter-spacing: -0.3px; font-family: 'DM Mono', monospace; }
-.loading, .empty { padding: 40px; text-align: center; color: #444; font-size: 14px; }
-
-.detail-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px; margin-bottom: 20px; }
-.detail-card { background: #141414; border: 1px solid #1e1e1e; border-radius: 12px; padding: 18px 20px; }
-.card-title { font-size: 11px; font-weight: 600; color: #444; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 14px; }
-.kv-list { display: flex; flex-direction: column; gap: 10px; }
-.kv { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
-.k { font-size: 12px; color: #555; flex-shrink: 0; }
-.v { font-size: 13px; color: #bbb; text-align: right; word-break: break-all; }
-.v-mono { font-family: 'DM Mono', monospace; font-size: 11px; color: #888; }
-.v-amount { font-size: 16px; font-weight: 700; color: #f0f0f0; }
-.v-green { color: #22c55e; }
-.v-red { color: #ef4444; }
-
-.env-badge { display: inline-block; font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 4px; letter-spacing: 0.5px; }
-.env-live { background: #0f2a1a; color: #22c55e; }
-.env-test { background: #1a1a2a; color: #60a5fa; }
-
-.section-card { background: #141414; border: 1px solid #1e1e1e; border-radius: 12px; padding: 20px; margin-bottom: 16px; }
-.section-title { font-size: 11px; font-weight: 600; color: #444; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 16px; }
-
-.timeline { display: flex; flex-direction: column; gap: 0; }
-.timeline-item { display: flex; gap: 14px; padding-bottom: 16px; position: relative; }
-.timeline-item::before { content: ""; position: absolute; left: 5px; top: 18px; bottom: 0; width: 1px; background: #1e1e1e; }
-.timeline-item:last-child::before { display: none; }
-.tl-dot { width: 11px; height: 11px; border-radius: 50%; background: #2a2a2a; border: 2px solid #3a3a3a; flex-shrink: 0; margin-top: 3px; }
-.tl-body { flex: 1; min-width: 0; }
-.tl-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
-.tl-type { font-size: 12px; font-weight: 600; color: #bbb; font-family: 'DM Mono', monospace; }
-.tl-time { font-size: 11px; color: #444; }
-.tl-transition { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
-.tl-from { font-size: 11px; color: #555; }
-.tl-arrow { font-size: 11px; color: #333; }
-.tl-summary { font-size: 12px; color: #555; }
-.tl-empty { font-size: 13px; color: #444; text-align: center; padding: 20px 0; }
-
-.table { width: 100%; border-collapse: collapse; }
-.table th { padding: 8px 12px; font-size: 11px; font-weight: 600; color: #444; text-align: left; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid #1e1e1e; }
-.table td { padding: 10px 12px; font-size: 13px; color: #bbb; border-bottom: 1px solid #171717; }
-.table tr:last-child td { border-bottom: none; }
-.td-mono { font-family: 'DM Mono', monospace; font-size: 11px; color: #888; }
-.td-muted { color: #666; font-size: 12px; }
-
-.status-badge { display: inline-block; font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 5px; letter-spacing: 0.3px; }
-.status-badge.sm { font-size: 10px; padding: 2px 6px; }
-.s-green  { background: #0f2a1a; color: #22c55e; border: 1px solid #155233; }
-.s-red    { background: #2a0f0f; color: #ef4444; border: 1px solid #521515; }
-.s-amber  { background: #2a1f0a; color: #f59e0b; border: 1px solid #523a0f; }
-.s-blue   { background: #0f1a2a; color: #60a5fa; border: 1px solid #153352; }
-.s-purple { background: #1a0f2a; color: #a78bfa; border: 1px solid #331552; }
-.s-orange { background: #2a1a0a; color: #fb923c; border: 1px solid #523210; }
-.s-gray   { background: #1a1a1a; color: #666; border: 1px solid #2a2a2a; }
-</style>

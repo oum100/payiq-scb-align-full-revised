@@ -1,17 +1,22 @@
 <script setup lang="ts">
+import { useLocalStore } from '~~/stores/local' // เพิ่มบรรทัดนี้
+
 const { $getLocale, $switchLocale, $getLocales, $t } = useI18n()
 const colorMode = useColorMode()
 
+// Multi-language: Create Language List
 const availableLocales = computed(() =>
-  $getLocales().map((l: { code: string; name?: string }) => ({
-    label: l.name ?? l.code,
-    value: l.code,
-  }))
+  $getLocales().map((l: { code: string; name?: string }) => ({ label: l.name ?? l.code, value: l.code }))
 )
 
+// Multi-language: Current Language with Pinia Store
+const localStore = useLocalStore()
 const currentLocale = computed({
-  get: () => $getLocale(),
-  set: (val: string) => $switchLocale(val),
+  get: () => localStore.currentLocale || $getLocale(), // ดึงค่าจาก Pinia store ก่อน ถ้าไม่มีค่อยใช้ค่าเริ่มต้นจาก i18n
+  set: (val: string) => {
+    $switchLocale(val)
+    localStore.setLanguage(val) // บันทึกการตั้งค่าภาษาใน Pinia store
+  },
 })
 
 function toggleColorMode() {

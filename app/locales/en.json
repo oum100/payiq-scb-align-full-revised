@@ -1,7 +1,7 @@
 {
   "nav": {
     "title": "PayIQ Internal",
-    "webhookDeliveries": "Webhook Deliveries"
+    "webhookDeliveries": "Webhook Deliveries to Merchant System"
   },
   "theme": {
     "light": "Light",
@@ -114,12 +114,30 @@
       "redirecting": "Redirecting to portal…",
       "backToLogin": "← Back to sign in",
       "errors": {
-        "invalid_token": { "title": "Link not found", "msg": "This sign-in link is invalid or has expired." },
-        "token_used": { "title": "Link already used", "msg": "This link has been used. Please request a new one." },
-        "token_expired": { "title": "Link expired", "msg": "This link expired after 15 minutes. Please request a new one." },
-        "inactive": { "title": "Account inactive", "msg": "Your account has been deactivated. Contact your administrator." },
-        "no_token": { "title": "No token", "msg": "The sign-in link appears to be incomplete." },
-        "error": { "title": "Something went wrong", "msg": "An unexpected error occurred. Please try again." }
+        "invalid_token": {
+          "title": "Link not found",
+          "msg": "This sign-in link is invalid or has expired."
+        },
+        "token_used": {
+          "title": "Link already used",
+          "msg": "This link has been used. Please request a new one."
+        },
+        "token_expired": {
+          "title": "Link expired",
+          "msg": "This link expired after 15 minutes. Please request a new one."
+        },
+        "inactive": {
+          "title": "Account inactive",
+          "msg": "Your account has been deactivated. Contact your administrator."
+        },
+        "no_token": {
+          "title": "No token",
+          "msg": "The sign-in link appears to be incomplete."
+        },
+        "error": {
+          "title": "Something went wrong",
+          "msg": "An unexpected error occurred. Please try again."
+        }
       }
     },
     "dashboard": {
@@ -139,6 +157,136 @@
       "recentPayments": "Recent Payments",
       "viewAll": "View all",
       "noPayments": "Payment history will appear here"
+    },
+    "signOut": "Sign out"
+  },
+  "admin": {
+    "nav": {
+      "overview": "Overview",
+      "dashboard": "Dashboard",
+      "payments": "Payments",
+      "callbacks": "Callbacks",
+      "webhooks": "Webhooks",
+      "queueHealth": "Queue Health",
+      "tenants": "Tenants",
+      "merchants": "Merchants",
+      "apiKeys": "API Keys",
+      "adminUsers": "Admin Users"
+    },
+    "dashboard": {
+      "shortTitle": "Dashboard",
+      "title": "Dashboard",
+      "subtitle": "Welcome back",
+      "stats": {
+        "totalPayments": "Total Payments",
+        "succeeded": "Succeeded",
+        "pending": "Pending",
+        "failed": "Failed"
+      }
+    },
+    "payment": {
+      "shortTitle": "Payments",
+      "title": "Payments",
+      "id": "ID",
+      "amount": "Amount",
+      "currency": "Currency",
+      "status": "Status",
+      "createdAt": "Created At",
+      "merchantRef": "Merchant Ref",
+      "providerRef": "Provider Ref"
+    },
+    "paymentDetail": {
+      "back": "Back",
+      "loading": "Loading…",
+      "notFound": "Payment not found",
+      "paymentInfo": "Payment Info",
+      "references": "References",
+      "timestamps": "Timestamps",
+      "customer": "Customer",
+      "amount": "Amount",
+      "currency": "Currency",
+      "method": "Method",
+      "provider": "Provider",
+      "description": "Description",
+      "publicId": "Public ID",
+      "orderId": "Order ID",
+      "merchantRef": "Merchant Ref",
+      "providerTxn": "Provider Txn",
+      "providerRef": "Provider Ref",
+      "created": "Created",
+      "expires": "Expires",
+      "succeeded": "Succeeded",
+      "failed": "Failed",
+      "name": "Name",
+      "email": "Email",
+      "phone": "Phone",
+      "merchant": "Merchant",
+      "tenant": "Tenant",
+      "qrCode": "PromptPay QR Code",
+      "qrPayload": "QR Payload (raw)",
+      "providerCallbacks": "Provider Callbacks",
+      "signatureValid": "Signature",
+      "processStatus": "Process Status",
+      "receivedAt": "Received At",
+      "eventTimeline": "Event Timeline",
+      "noEvents": "No events recorded",
+      "selectEvent": "Select an event to see details",
+      "providerAttempts": "Provider Attempts",
+      "webhookDeliveries": "Webhook Deliveries",
+      "type": "Type",
+      "httpStatus": "HTTP",
+      "sentAt": "Sent At",
+      "attempts": "Attempts",
+      "endpoint": "Endpoint",
+      "requestHeaders": "Request Headers",
+        "requestBody": "Request Body",
+        "responseHeaders": "Response Headers",
+        "responseBody": "Response Body",
+        "copy": "Copy",
+      "copyQrText": "Copy QR payload",
+      "downloadQr": "Download QR image"
+    },
+    "webhook": {
+      "shortTitle": "Webhooks",
+      "title": "รายการส่งแจ้ง Merchant System (Webhooks)",
+      "id": "ID",
+      "eventType": "Event Type",
+      "status": "Status",
+      "attempts": "Attempts",
+      "paymentId": "Payment ID",
+      "endPoint": "EndPoint",
+      "http_status": "HTTP Status",
+      "createdAt": "Created At",
+      "total": "Total",
+      "delivered": "Delivered",
+      "retrying": "Retrying",
+      "dead": "Dead",
+      "last24h": "Last 24h"
+    },
+    "callback": {
+      "shortTitle": "Callbacks",
+      "title": "Callbacks",
+      "id": "ID",
+      "provider": "PROVIDER",
+      "status": "STATUS",
+      "sig_valid": "SIG.VAILD",
+      "providerRef": "PROVIDER REF",
+      "providerTxn": "PROVIDER TXN",
+      "receivedAt": "RECEIVED",
+      "error": "ERROR"
+    },
+    "queue": {
+      "shortTitle": "Queue Health",
+      "title": "Queue Health",
+      "webhoonInbound": "Webhook Inbound",
+      "webhookInboundDLQ": "Webhook Inbound",
+      "webhook": "Webhook",
+      "webhookDLQ": "Webhook DLQ",
+      "Callback": "Callback",
+      "callbackDLQ": "Callback DLQ",
+      "Reconcile": "Reconcile",
+      "reconcileDLQ": "Reconcile DLQ",
+      "lastUpdated": "Last Updated"
     },
     "signOut": "Sign out"
   }

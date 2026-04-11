@@ -1,7 +1,7 @@
 <template>
   <div class="min-h-screen bg-gray-50 dark:bg-neutral-950 flex flex-col items-center justify-center p-6 transition-colors">
     <div class="w-full max-w-sm">
-      <UCard class="shadow-xl">
+      <UCard class="shadow-xl h-100">
         <!-- Logo -->
         <div class="text-center mb-8">
           <div class="inline-flex items-center gap-1 text-2xl font-bold tracking-tight mb-1">
@@ -31,9 +31,9 @@
 
         <!-- Login form -->
         <template v-else>
-          <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-1">{{ $t('portal.login.heading') }}</h2>
+          <h2 class="text-lg  py-5 font-semibold text-gray-900 dark:text-white mb-1">{{ $t('portal.login.heading') }}</h2>
           <p class="text-sm text-gray-500 dark:text-neutral-400 mb-6">{{ $t('portal.login.subtitle') }}</p>
-          <form @submit.prevent="submit">
+          <form @submit.prevent="submit" class="py-6">
             <UFormField :label="$t('portal.login.emailLabel') as string" class="mb-4">
               <UInput
                 v-model="email"

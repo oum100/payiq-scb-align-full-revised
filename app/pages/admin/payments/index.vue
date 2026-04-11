@@ -1,88 +1,189 @@
 <template>
   <div>
-    <div class="page-header">
-      <h1 class="page-title">Payments</h1>
-      <div class="header-actions">
-        <span class="total-badge">{{ pagination?.total?.toLocaleString() ?? "—" }} total</span>
-      </div>
+    <!-- Page header -->
+    <div class="flex items-center justify-between mb-5">
+      <h1 class="text-2xl font-semibold tracking-tight text-gray-900 dark:text-white">Payments</h1>
+      <UBadge color="neutral" variant="subtle" class="text-sm">
+        {{ pagination?.total?.toLocaleString() ?? "—" }} total
+      </UBadge>
     </div>
 
-    <!-- Filters -->
-    <div class="filters">
-      <input v-model="search" class="filter-input filter-search" placeholder="Search publicId, order, ref, email…" @input="onSearchInput" />
-      <select v-model="statusFilter" class="filter-select" @change="fetchPage(1)">
-        <option value="">All statuses</option>
-        <option v-for="s in STATUSES" :key="s" :value="s">{{ s }}</option>
-      </select>
-      <input v-model="fromDate" type="date" class="filter-input filter-date" @change="fetchPage(1)" />
-      <span class="filter-sep">→</span>
-      <input v-model="toDate" type="date" class="filter-input filter-date" @change="fetchPage(1)" />
-      <button class="btn-clear" @click="clearFilters">Clear</button>
+    <!-- Filters row 1: search + status + env -->
+    <div class="flex flex-wrap gap-2 mb-2 items-center">
+      <UInput v-model="search" placeholder="Search ID, order, customer, description…" icon="i-lucide-search"
+        class="flex-1 min-w-48" @input="onSearchInput" />
+      <USelect v-model="statusFilter" :items="statusOptions" value-key="value" label-key="label" class="w-48" />
+      <USelect v-model="envFilter" :items="envOptions" value-key="value" label-key="label" class="w-28" />
+    </div>
+
+    <!-- Filters row 2: tenant + merchant + date range -->
+    <div class="flex flex-wrap gap-2 mb-4 items-center">
+      <USelect v-model="tenantFilter" :items="tenantOptions" value-key="value" label-key="label" class="w-48" />
+      <USelect v-model="merchantFilter" :items="merchantOptions" value-key="value" label-key="label" class="w-48"
+        :disabled="!tenantFilter" />
+      <UInput v-model="fromDate" type="date" class="w-36" />
+      <span class="text-gray-400 dark:text-neutral-500 text-xs">→</span>
+      <UInput v-model="toDate" type="date" class="w-36" />
+      <UButton color="neutral" variant="outline" size="sm" icon="i-lucide-x" @click="clearFilters">Clear</UButton>
     </div>
 
     <!-- Table -->
-    <div class="table-wrap">
-      <div v-if="pending" class="table-loading">Loading…</div>
-      <table v-else class="table">
-        <thead>
-          <tr>
-            <th>Public ID</th>
-            <th>Status</th>
-            <th>Amount</th>
-            <th>Merchant</th>
-            <th>Order / Ref</th>
-            <th>Created</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="p in items" :key="p.id" class="table-row" @click="goDetail(p.publicId)">
-            <td class="td-mono">{{ p.publicId }}</td>
-            <td><span class="status-badge" :class="statusClass(p.status)">{{ p.status }}</span></td>
-            <td class="td-amount">฿{{ fmtAmount(p.amount) }}</td>
-            <td class="td-muted">{{ p.merchantAccount?.name ?? "—" }}</td>
-            <td class="td-mono td-sm">{{ p.merchantOrderId ?? p.merchantReference ?? "—" }}</td>
-            <td class="td-muted td-sm">{{ fmtDate(p.createdAt) }}</td>
-            <td class="td-arrow">›</td>
-          </tr>
-          <tr v-if="!items?.length">
-            <td colspan="7" class="td-empty">No payments found</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+    <UCard :ui="{ body: 'p-0' }">
+      <div v-if="pending" class="py-10 text-center text-sm text-gray-500 dark:text-neutral-400">Loading…</div>
+      <div v-else class="overflow-x-auto">
+        <table class="w-full border-collapse">
+          <thead>
+            <tr class="border-b border-gray-200 dark:border-neutral-800">
+              <th
+                class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-neutral-200">
+                Public ID</th>
+              <th
+                class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-neutral-200">
+                Status</th>
+              <th
+                class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-neutral-200">
+                Amount</th>
+              <th
+                class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-neutral-200">
+                Tenant</th>
+              <th
+                class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-neutral-200">
+                Merchant</th>
+              <th
+                class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-neutral-200">
+                Customer</th>
+              <th
+                class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-neutral-200">
+                Env</th>
+              <th
+                class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-neutral-200">
+                Created</th>
+              <th class="px-4 py-3" />
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="p in items" :key="p.id"
+              class="border-b border-gray-100 dark:border-neutral-800 last:border-0 cursor-pointer hover:bg-gray-50 dark:hover:bg-neutral-800/40 transition-colors"
+              @click="goDetail(p.publicId)">
+              <td class="px-4 py-3">
+
+                <div class="font-sans text-sm text-gray-700 dark:text-neutral-300">{{ p.publicId }}</div>
+
+                <!-- <div v-if="p.providerTransactionId"
+                  class="font-sans text-sm text-gray-400 dark:text-neutral-500 mt-0.5">{{ p.providerTransactionId }}
+                </div> -->
+
+              </td>
+              <td class="px-4 py-3">
+                <UBadge :color="statusColor(p.status)" variant="subtle" size="sm" class="font-semibold tracking-wide">
+                  {{ p.status }}
+                </UBadge>
+              </td>
+              <td class="px-4 py-3 font-semibold text-sm text-gray-900 dark:text-white">฿{{ fmtAmount(p.amount) }}</td>
+              <td class="px-4 py-3 text-sm text-gray-700 dark:text-neutral-300">{{ p.tenant?.name ?? "—" }}</td>
+              <td class="px-4 py-3 text-sm text-gray-700 dark:text-neutral-300">{{ p.merchantAccount?.name ?? "—" }}
+              </td>
+              <td class="px-4 py-3 text-sm text-gray-700 dark:text-neutral-300">{{ p.customerName ?? p.customerEmail ??
+                "—" }}</td>
+              <td class="px-4 py-3">
+                <UBadge :label="p.environment" :color="p.environment === 'LIVE' ? 'success' : 'warning'" variant="soft"
+                  size="sm" />
+              </td>
+              <td class="px-4 py-3 text-sm text-gray-500 dark:text-neutral-400">{{ fmtDate(p.createdAt) }}</td>
+              <td class="px-4 py-3 text-right pr-5 text-gray-400 dark:text-neutral-500">›</td>
+            </tr>
+            <tr v-if="!items?.length">
+              <td colspan="9" class="px-4 py-10 text-center text-sm text-gray-500 dark:text-neutral-400">No payments
+                found</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </UCard>
 
     <!-- Pagination -->
-    <div v-if="pagination && pagination.totalPages > 1" class="pagination">
-      <button :disabled="page <= 1" class="pg-btn" @click="fetchPage(page - 1)">‹ Prev</button>
-      <span class="pg-info">Page {{ page }} of {{ pagination.totalPages }}</span>
-      <button :disabled="page >= pagination.totalPages" class="pg-btn" @click="fetchPage(page + 1)">Next ›</button>
+    <div v-if="pagination && pagination.totalPages > 1" class="flex items-center justify-center gap-4 mt-5">
+      <UButton color="neutral" variant="outline" size="sm" :disabled="page <= 1" @click="fetchPage(page - 1)">‹ Prev
+      </UButton>
+      <span class="text-sm text-gray-500 dark:text-neutral-400">Page {{ page }} of {{ pagination.totalPages }}</span>
+      <UButton color="neutral" variant="outline" size="sm" :disabled="page >= pagination.totalPages"
+        @click="fetchPage(page + 1)">Next ›</UButton>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import { fmtDateTime as fmtDateTimeFn } from '~/utils/fmtDate'
+
 definePageMeta({ layout: "admin", middleware: "admin-auth" })
 
 const router = useRouter()
-const STATUSES = ["CREATED","ROUTING","PENDING_PROVIDER","AWAITING_CUSTOMER","PROCESSING","SUCCEEDED","FAILED","CANCELLED","EXPIRED","REVERSED","REFUNDED"]
+const { $t, $getLocale } = useI18n()
 
+// ─── filter state ─────────────────────────────────────────────────────────────
 const page = ref(1)
 const search = ref("")
-const statusFilter = ref("")
+const statusFilter = ref("__all__")
+const envFilter = ref("__all__")
+const tenantFilter = ref("__all__")
+const merchantFilter = ref("__all__")
 const fromDate = ref("")
 const toDate = ref("")
 
+// helper: "__all__" หรือ undefined ถือว่าไม่ได้ filter
+const isAll = (v: string) => !v || v === "__all__"
+
+// ─── tenant dropdown ──────────────────────────────────────────────────────────
+const { data: tenantsData } = await useFetch<{ items: { id: string; code: string; name: string }[] }>("/api/admin/tenants")
+const tenantOptions = computed(() => [
+  { label: "All tenants", value: "__all__" },
+  ...(tenantsData.value?.items ?? []).map(t => ({ label: `${t.name} (${t.code})`, value: t.id })),
+])
+
+// ─── merchant dropdown (filtered by selected tenant) ──────────────────────────
+const { data: merchantsData } = await useFetch<{ items: { id: string; name: string; tenantId: string }[] }>("/api/admin/merchants")
+const merchantOptions = computed(() => {
+  const list = (merchantsData.value?.items ?? [])
+    .filter(m => isAll(tenantFilter.value) || m.tenantId === tenantFilter.value)
+    .map(m => ({ label: m.name, value: m.id }))
+  return [{ label: "All merchants", value: "__all__" }, ...list]
+})
+
+// reset merchant when tenant changes
+watch(tenantFilter, () => { merchantFilter.value = "__all__" })
+
+// re-fetch on any filter change (NuxtUI v4 USelect ไม่ emit @change)
+watch([statusFilter, envFilter, tenantFilter, merchantFilter, fromDate, toDate], () => {
+  fetchPage(1)
+})
+
+// ─── static options ───────────────────────────────────────────────────────────
+// NuxtUI v4 / Radix ห้ามใช้ value="" → ใช้ "__all__" แทน แล้ว convert ตอน query
+const STATUSES = ["CREATED", "ROUTING", "PENDING_PROVIDER", "AWAITING_CUSTOMER", "PROCESSING", "SUCCEEDED", "FAILED", "CANCELLED", "EXPIRED", "REVERSED", "REFUNDED"]
+const statusOptions = computed(() => [
+  { label: "All statuses", value: "__all__" },
+  ...STATUSES.map(s => ({ label: s, value: s })),
+])
+const envOptions = [
+  { label: "All envs", value: "__all__" },
+  { label: "TEST", value: "TEST" },
+  { label: "LIVE", value: "LIVE" },
+]
+
+// ─── fetch ────────────────────────────────────────────────────────────────────
 const queryParams = computed(() => ({
   page: page.value,
   pageSize: 25,
+  ...(!isAll(statusFilter.value) && { status: statusFilter.value }),
+  ...(!isAll(envFilter.value) && { environment: envFilter.value }),
+  ...(!isAll(tenantFilter.value) && { tenantId: tenantFilter.value }),
+  ...(!isAll(merchantFilter.value) && { merchantId: merchantFilter.value }),
   ...(search.value && { search: search.value }),
-  ...(statusFilter.value && { status: statusFilter.value }),
   ...(fromDate.value && { from: fromDate.value }),
   ...(toDate.value && { to: toDate.value }),
 }))
 
-const { data, pending, refresh } = await useFetch("/api/admin/payments", { query: queryParams, watch: [queryParams] })
+const { data, pending } = await useFetch("/api/admin/payments", { query: queryParams, watch: [queryParams] })
 
 const items = computed(() => (data.value as any)?.items ?? [])
 const pagination = computed(() => (data.value as any)?.pagination)
@@ -94,82 +195,38 @@ function onSearchInput() {
   clearTimeout(searchTimer)
   searchTimer = setTimeout(() => fetchPage(1), 350)
 }
+
 function clearFilters() {
-  search.value = ""; statusFilter.value = ""; fromDate.value = ""; toDate.value = ""
-  fetchPage(1)
+  search.value = ""
+  statusFilter.value = "__all__"
+  envFilter.value = "__all__"
+  tenantFilter.value = "__all__"
+  merchantFilter.value = "__all__"
+  fromDate.value = ""
+  toDate.value = ""
+  page.value = 1
 }
+
 function goDetail(publicId: string) { router.push(`/admin/payments/${publicId}`) }
 
 function fmtAmount(v: string) {
   return Number(v).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 }
-function fmtDate(iso: string) {
-  return new Date(iso).toLocaleString("en-GB", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })
-}
 
-const STATUS_CLASSES: Record<string, string> = {
-  SUCCEEDED: "s-green", FAILED: "s-red", EXPIRED: "s-gray", CANCELLED: "s-gray",
-  AWAITING_CUSTOMER: "s-amber", PROCESSING: "s-purple", CREATED: "s-blue",
-  ROUTING: "s-blue", PENDING_PROVIDER: "s-orange", REVERSED: "s-gray", REFUNDED: "s-gray",
+function fmtDate(iso: string) { return fmtDateTimeFn(iso, $getLocale()) }
+
+const STATUS_COLORS: Record<string, string> = {
+  SUCCEEDED: "success",
+  FAILED: "error",
+  EXPIRED: "neutral",
+  CANCELLED: "neutral",
+  REVERSED: "warning",
+  REFUNDED: "info",
+  AWAITING_CUSTOMER: "warning",
+  PROCESSING: "info",
+  CREATED: "neutral",
+  ROUTING: "neutral",
+  PENDING_PROVIDER: "warning",
 }
-function statusClass(s: string) { return STATUS_CLASSES[s] ?? "s-gray" }
+function statusColor(s: string): any { return STATUS_COLORS[s] ?? "neutral" }
 </script>
-
-<style scoped>
-.page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
-.page-title { font-size: 22px; font-weight: 600; color: #f0f0f0; letter-spacing: -0.3px; }
-.total-badge { font-size: 12px; color: #555; background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 6px; padding: 4px 10px; }
-
-.filters { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; align-items: center; }
-.filter-input, .filter-select {
-  background: #141414; border: 1px solid #242424; border-radius: 7px;
-  color: #ccc; font-size: 13px; padding: 8px 12px; outline: none;
-  font-family: inherit; transition: border-color 0.15s;
-}
-.filter-input:focus, .filter-select:focus { border-color: #f59e0b44; }
-.filter-search { flex: 1; min-width: 200px; }
-.filter-date { width: 140px; }
-.filter-select { min-width: 160px; }
-.filter-sep { color: #444; font-size: 12px; }
-.btn-clear {
-  background: transparent; border: 1px solid #242424; border-radius: 7px;
-  color: #555; font-size: 13px; padding: 8px 14px; cursor: pointer;
-  transition: color 0.15s; font-family: inherit;
-}
-.btn-clear:hover { color: #aaa; }
-
-.table-wrap { background: #141414; border: 1px solid #1e1e1e; border-radius: 12px; overflow: hidden; }
-.table { width: 100%; border-collapse: collapse; }
-.table thead tr { border-bottom: 1px solid #1e1e1e; }
-.table th { padding: 12px 16px; font-size: 11px; font-weight: 600; color: #444; text-align: left; text-transform: uppercase; letter-spacing: 0.5px; }
-.table-row { border-bottom: 1px solid #1a1a1a; cursor: pointer; transition: background 0.1s; }
-.table-row:hover { background: #1a1a1a; }
-.table-row:last-child { border-bottom: none; }
-td { padding: 12px 16px; font-size: 13px; color: #bbb; vertical-align: middle; }
-.td-mono { font-family: 'DM Mono', monospace; font-size: 12px; color: #888; }
-.td-amount { font-weight: 600; color: #f0f0f0; }
-.td-muted { color: #666; }
-.td-sm { font-size: 12px; }
-.td-arrow { color: #333; font-size: 16px; text-align: right; padding-right: 20px; }
-.td-empty { text-align: center; color: #444; padding: 40px; }
-.table-loading { padding: 40px; text-align: center; color: #444; font-size: 14px; }
-
-.status-badge { display: inline-block; font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 5px; letter-spacing: 0.3px; }
-.s-green  { background: #0f2a1a; color: #22c55e; border: 1px solid #155233; }
-.s-red    { background: #2a0f0f; color: #ef4444; border: 1px solid #521515; }
-.s-amber  { background: #2a1f0a; color: #f59e0b; border: 1px solid #523a0f; }
-.s-blue   { background: #0f1a2a; color: #60a5fa; border: 1px solid #153352; }
-.s-purple { background: #1a0f2a; color: #a78bfa; border: 1px solid #331552; }
-.s-orange { background: #2a1a0a; color: #fb923c; border: 1px solid #523210; }
-.s-gray   { background: #1a1a1a; color: #666; border: 1px solid #2a2a2a; }
-
-.pagination { display: flex; align-items: center; justify-content: center; gap: 16px; margin-top: 20px; }
-.pg-btn {
-  background: #141414; border: 1px solid #242424; border-radius: 7px;
-  color: #888; font-size: 13px; padding: 7px 16px; cursor: pointer;
-  transition: color 0.15s; font-family: inherit;
-}
-.pg-btn:hover:not(:disabled) { color: #f59e0b; border-color: #333; }
-.pg-btn:disabled { opacity: 0.3; cursor: not-allowed; }
-.pg-info { font-size: 13px; color: #555; }
-</style>

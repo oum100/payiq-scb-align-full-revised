@@ -1,97 +1,107 @@
 <template>
   <div>
-    <div class="page-header">
+    <!-- Page header -->
+    <div class="flex items-start justify-between mb-6">
       <div>
-        <h1 class="page-title">Dashboard</h1>
-        <p class="page-sub">{{ today }}</p>
+        <h1 class="text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">Dashboard</h1>
+        <p class="mt-1 text-sm text-gray-500 dark:text-neutral-400">{{ today }}</p>
       </div>
-      <button class="refresh-btn" :class="{ spinning: pending }" title="Refresh" @click="() => refresh()">↻</button>
+      <UButton
+        icon="i-heroicons-arrow-path"
+        color="neutral"
+        variant="outline"
+        :loading="pending"
+        title="Refresh"
+        @click="() => refresh()"
+      />
     </div>
 
     <!-- Stat cards -->
-    <div class="stat-grid">
-      <div class="stat-card">
-        <div class="stat-label">Revenue (all time)</div>
-        <div class="stat-value">฿{{ fmtAmount(stats?.totalRevenueTHB) }}</div>
-        <div class="stat-sub">{{ fmtNum(stats?.totalPayments) }} payments total</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">Payments (24h)</div>
-        <div class="stat-value">{{ fmtNum(stats?.payments24h) }}</div>
-        <div class="stat-sub stat-green">{{ stats?.succeededToday ?? 0 }} succeeded</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">Success rate (24h)</div>
-        <div class="stat-value" :class="rateClass">{{ stats?.successRate24h ?? 0 }}%</div>
-        <div class="stat-sub stat-red">{{ stats?.failedToday ?? 0 }} failed today</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">Pending callbacks</div>
-        <div class="stat-value" :class="stats?.pendingCallbacks ? 'val-amber' : ''">
+    <div class="grid grid-cols-2 lg:grid-cols-5 gap-3 mb-6">
+      <UCard class="col-span-1">
+        <p class="text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-neutral-400 mb-2">Revenue (all time)</p>
+        <p class="text-2xl font-bold text-gray-900 dark:text-white">฿{{ fmtAmount(stats?.totalRevenueTHB) }}</p>
+        <p class="text-xs mt-1 text-gray-500 dark:text-neutral-400">{{ fmtNum(stats?.totalPayments) }} payments total</p>
+      </UCard>
+
+      <UCard class="col-span-1">
+        <p class="text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-neutral-400 mb-2">Payments (24h)</p>
+        <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ fmtNum(stats?.payments24h) }}</p>
+        <p class="text-xs mt-1 text-green-600 dark:text-green-400">{{ stats?.succeededToday ?? 0 }} succeeded</p>
+      </UCard>
+
+      <UCard class="col-span-1">
+        <p class="text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-neutral-400 mb-2">Success rate (24h)</p>
+        <p class="text-2xl font-bold" :class="rateColorClass">{{ stats?.successRate24h ?? 0 }}%</p>
+        <p class="text-xs mt-1 text-red-500 dark:text-red-400">{{ stats?.failedToday ?? 0 }} failed today</p>
+      </UCard>
+
+      <UCard class="col-span-1">
+        <p class="text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-neutral-400 mb-2">Pending callbacks</p>
+        <p class="text-2xl font-bold" :class="stats?.pendingCallbacks ? 'text-amber-500' : 'text-gray-900 dark:text-white'">
           {{ fmtNum(stats?.pendingCallbacks) }}
-        </div>
-        <div class="stat-sub">Dead webhooks: {{ stats?.deadWebhooks ?? 0 }}</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">Active merchants</div>
-        <div class="stat-value">{{ fmtNum(stats?.activeMerchants) }}</div>
-        <div class="stat-sub">{{ stats?.activeApiKeys ?? 0 }} active API keys</div>
-      </div>
+        </p>
+        <p class="text-xs mt-1 text-gray-500 dark:text-neutral-400">Dead webhooks: {{ stats?.deadWebhooks ?? 0 }}</p>
+      </UCard>
+
+      <UCard class="col-span-1">
+        <p class="text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-neutral-400 mb-2">Active merchants</p>
+        <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ fmtNum(stats?.activeMerchants) }}</p>
+        <p class="text-xs mt-1 text-gray-500 dark:text-neutral-400">{{ stats?.activeApiKeys ?? 0 }} active API keys</p>
+      </UCard>
     </div>
 
     <!-- Charts row -->
-    <div class="charts-row">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-6">
       <!-- Revenue bar chart -->
-      <div class="chart-card">
-        <div class="chart-title">Revenue — last 7 days (THB)</div>
-        <div class="bar-chart">
+      <UCard>
+        <p class="text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-neutral-400 mb-4">Revenue — last 7 days (THB)</p>
+        <div class="flex items-end gap-1.5 h-24">
           <template v-for="(d, i) in revenueChart" :key="i">
-            <div class="bar-col">
-              <div class="bar" :style="{ height: barHeight(d.revenue) + 'px' }"
-                :title="`฿${fmtAmount(d.revenue)} · ${d.count} txns`" />
-              <div class="bar-label">{{ shortDate(d.date) }}</div>
+            <div class="flex-1 flex flex-col items-center gap-1.5">
+              <div
+                class="w-full rounded-t bg-amber-500/20 border border-amber-500/40 hover:bg-amber-500/35 transition-colors cursor-default min-h-1"
+                :style="{ height: barHeight(d.revenue) + 'px' }"
+                :title="`฿${fmtAmount(d.revenue)} · ${d.count} txns`"
+              />
+              <span class="text-[10px] text-gray-500 dark:text-neutral-400 whitespace-nowrap">{{ shortDate(d.date) }}</span>
             </div>
           </template>
         </div>
-      </div>
+      </UCard>
 
-      <!-- Status distribution donut -->
-      <div class="chart-card">
-        <div class="chart-title">Status distribution (24h)</div>
-        <div class="dist-list">
-          <div v-for="row in statusDistribution" :key="row.status" class="dist-row">
-            <span class="dist-dot" :style="{ background: statusColor(row.status) }" />
-            <span class="dist-status">{{ row.status }}</span>
-            <span class="dist-bar-wrap">
-              <span class="dist-bar-fill" :style="{
-                width: distPct(row.count) + '%',
-                background: statusColor(row.status),
-              }" />
-            </span>
-            <span class="dist-count">{{ row.count }}</span>
+      <!-- Status distribution -->
+      <UCard>
+        <p class="text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-neutral-400 mb-4">Status distribution (24h)</p>
+        <div class="flex flex-col gap-2.5">
+          <div v-for="row in statusDistribution" :key="row.status" class="flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full flex-shrink-0" :style="{ background: statusColor(row.status) }" />
+            <span class="text-xs text-gray-700 dark:text-neutral-200 w-36 flex-shrink-0">{{ row.status }}</span>
+            <div class="flex-1 h-1 bg-gray-100 dark:bg-neutral-800 rounded overflow-hidden">
+              <span
+                class="block h-full rounded transition-all"
+                :style="{ width: distPct(row.count) + '%', background: statusColor(row.status) }"
+              />
+            </div>
+            <span class="text-xs text-gray-500 dark:text-neutral-400 w-7 text-right flex-shrink-0">{{ row.count }}</span>
           </div>
-          <div v-if="!statusDistribution?.length" class="dist-empty">No payments in last 24h</div>
+          <p v-if="!statusDistribution?.length" class="text-sm text-gray-500 dark:text-neutral-400 text-center py-5">
+            No payments in last 24h
+          </p>
         </div>
-      </div>
+      </UCard>
     </div>
 
     <!-- Quick links -->
-    <div class="quick-links">
-      <NuxtLink to="/admin/payments" class="qlink">
-        <span class="qlink-icon">◈</span>
-        <span>View all payments</span>
-      </NuxtLink>
-      <NuxtLink to="/admin/callbacks" class="qlink">
-        <span class="qlink-icon">↺</span>
-        <span>Callbacks monitor</span>
-      </NuxtLink>
-      <NuxtLink to="/admin/webhooks" class="qlink">
-        <span class="qlink-icon">⇗</span>
-        <span>Webhook deliveries</span>
-      </NuxtLink>
-      <NuxtLink to="/admin/queues" class="qlink">
-        <span class="qlink-icon">⧖</span>
-        <span>Queue health</span>
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+      <NuxtLink
+        v-for="link in quickLinks"
+        :key="link.to"
+        :to="link.to"
+        class="flex items-center gap-2.5 bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-xl px-4 py-3.5 text-sm text-gray-700 dark:text-neutral-200 hover:border-amber-500/50 hover:text-amber-600 dark:hover:text-amber-400 transition-colors"
+      >
+        <UIcon :name="link.icon" class="text-base flex-shrink-0" />
+        <span>{{ link.label }}</span>
       </NuxtLink>
     </div>
   </div>
@@ -99,6 +109,8 @@
 
 <script setup lang="ts">
 definePageMeta({ layout: "admin", middleware: "admin-auth" })
+
+const { $t, $getLocale, $switchLocale, $getLocales } = useI18n()
 
 const { data, pending, refresh } = await useFetch("/api/admin/dashboard/stats", { lazy: false })
 
@@ -116,11 +128,11 @@ function fmtNum(v?: number) {
   return (v ?? 0).toLocaleString()
 }
 
-const rateClass = computed(() => {
+const rateColorClass = computed(() => {
   const r = stats.value?.successRate24h ?? 0
-  if (r >= 90) return "val-green"
-  if (r >= 70) return "val-amber"
-  return "val-red"
+  if (r >= 90) return "text-green-600 dark:text-green-400"
+  if (r >= 70) return "text-amber-500"
+  return "text-red-500 dark:text-red-400"
 })
 
 // Bar chart helpers
@@ -143,261 +155,11 @@ const STATUS_COLORS: Record<string, string> = {
   FAILED: "#ef4444", EXPIRED: "#6b7280", CANCELLED: "#6b7280",
 }
 function statusColor(s: string) { return STATUS_COLORS[s] ?? "#555" }
+
+const quickLinks = [
+  { to: "/admin/payments", icon: "i-heroicons-credit-card", label: "View all payments" },
+  { to: "/admin/callbacks", icon: "i-heroicons-arrow-path", label: "Callbacks monitor" },
+  { to: "/admin/webhooks", icon: "i-heroicons-arrow-top-right-on-square", label: "Webhook deliveries" },
+  { to: "/admin/queues", icon: "i-heroicons-queue-list", label: "Queue health" },
+]
 </script>
-
-<style scoped>
-.page-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  margin-bottom: 24px;
-}
-
-.page-title {
-  font-size: 32px;
-  font-weight: 600;
-  color: #acabab;
-  letter-spacing: -0.3px;
-}
-
-.page-sub {
-  font-size: 13px;
-  color: #575555;
-  margin-top: 4px;
-}
-
-.refresh-btn {
-  background: #353535;
-  border: 1px solid #2a2a2a;
-  border-radius: 7px;
-  color: #866f6f;
-  font-size: 18px;
-  width: 36px;
-  height: 36px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: color 0.15s;
-  flex-shrink: 0;
-  margin-top: 4px;
-}
-
-.refresh-btn:hover {
-  color: #f59e0b;
-}
-
-.refresh-btn.spinning {
-  animation: spin 0.8s linear infinite;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-.stat-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 14px;
-  margin-bottom: 24px;
-}
-
-.stat-card {
-  background: #141414;
-  border: 1px solid #1e1e1e;
-  border-radius: 12px;
-  padding: 18px 20px;
-}
-
-.stat-label {
-  font-size: 11px;
-  color: #acabab;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-bottom: 10px;
-}
-
-.stat-value {
-  font-size: 26px;
-  font-weight: 700;
-  color: #f0f0f0;
-  letter-spacing: -0.5px;
-  margin-bottom: 6px;
-}
-
-.stat-sub {
-  font-size: 12px;
-  color: #acabab;
-}
-
-.stat-green {
-  color: #22c55e;
-}
-
-.stat-red {
-  color: #ef4444;
-}
-
-.val-green {
-  color: #22c55e;
-}
-
-.val-amber {
-  color: #f59e0b;
-}
-
-.val-red {
-  color: #ef4444;
-}
-
-.charts-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 14px;
-  margin-bottom: 24px;
-}
-
-@media (max-width: 860px) {
-  .charts-row {
-    grid-template-columns: 1fr;
-  }
-}
-
-.chart-card {
-  background: #373636;
-  border: 1px solid #acabab;
-  border-radius: 12px;
-  padding: 20px;
-}
-
-.chart-title {
-  font-size: 12px;
-  color: #acabab;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-bottom: 16px;
-}
-
-.bar-chart {
-  display: flex;
-  align-items: flex-end;
-  gap: 6px;
-  height: 96px;
-}
-
-.bar-col {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-}
-
-.bar {
-  width: 100%;
-  background: #f59e0b33;
-  border-radius: 4px 4px 0 0;
-  border: 1px solid #f59e0b66;
-  min-height: 4px;
-  transition: height 0.3s;
-  cursor: default;
-}
-
-.bar:hover {
-  background: #f59e0b55;
-}
-
-.bar-label {
-  font-size: 10px;
-  color: #acabab;
-  white-space: nowrap;
-}
-
-.dist-list {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.dist-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.dist-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-
-.dist-status {
-  font-size: 12px;
-  color: #888;
-  width: 140px;
-  flex-shrink: 0;
-}
-
-.dist-bar-wrap {
-  flex: 1;
-  height: 4px;
-  background: #1e1e1e;
-  border-radius: 2px;
-  overflow: hidden;
-}
-
-.dist-bar-fill {
-  display: block;
-  height: 100%;
-  border-radius: 2px;
-  transition: width 0.4s;
-}
-
-.dist-count {
-  font-size: 12px;
-  color: #555;
-  width: 30px;
-  text-align: right;
-  flex-shrink: 0;
-}
-
-.dist-empty {
-  font-size: 13px;
-  color: #444;
-  text-align: center;
-  padding: 20px 0;
-}
-
-.quick-links {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-  gap: 10px;
-}
-
-.qlink {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  background: #141414;
-  border: 1px solid #1e1e1e;
-  border-radius: 10px;
-  padding: 14px 16px;
-  font-size: 13px;
-  color: #acabab;
-  transition: border-color 0.15s, color 0.15s;
-}
-
-.qlink:hover {
-  border-color: #333;
-  color: #f59e0b;
-}
-
-.qlink-icon {
-  font-size: 16px;
-}
-</style>

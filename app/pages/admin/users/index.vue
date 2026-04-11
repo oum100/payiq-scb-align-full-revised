@@ -1,62 +1,116 @@
 <template>
-  <div>
-    <div class="page-header">
-      <h1 class="page-title">Admin Users</h1>
-      <button class="btn-primary" @click="showCreate = true">+ Add Admin</button>
+  <div class="min-h-screen bg-gray-50 dark:bg-neutral-950 p-6">
+    <!-- Page header -->
+    <div class="flex items-center justify-between mb-6">
+      <h1 class="text-2xl font-semibold tracking-tight text-gray-900 dark:text-white">Admin Users</h1>
+      <UButton label="+ Add Admin" color="warning" variant="soft" @click="showCreate = true" />
     </div>
 
-    <div class="table-wrap">
-      <div v-if="pending" class="table-loading">Loading…</div>
-      <table v-else class="table">
-        <thead>
-          <tr><th>Name</th><th>Email</th><th>Status</th><th>Active sessions</th><th>Last login</th><th>Created</th><th>Actions</th></tr>
-        </thead>
-        <tbody>
-          <tr v-for="u in items" :key="u.id" class="table-row">
-            <td class="td-label">{{ u.name ?? "—" }}</td>
-            <td class="td-mono">{{ u.email }}</td>
-            <td><span class="status-badge" :class="u.isActive ? 's-green' : 's-gray'">{{ u.isActive ? "Active" : "Inactive" }}</span></td>
-            <td class="td-muted">{{ u._count?.sessions ?? 0 }}</td>
-            <td class="td-muted">{{ u.lastLoginAt ? fmtDate(u.lastLoginAt) : "Never" }}</td>
-            <td class="td-muted">{{ fmtDate(u.createdAt) }}</td>
-            <td class="td-actions">
-              <button v-if="u.email !== me?.email" class="action-btn" :class="u.isActive ? 'action-deactivate' : 'action-activate'" @click="toggleActive(u)">
-                {{ u.isActive ? "Deactivate" : "Activate" }}
-              </button>
-              <span v-else class="td-you">You</span>
-            </td>
-          </tr>
-          <tr v-if="!items.length"><td colspan="7" class="td-empty">No admin users</td></tr>
-        </tbody>
-      </table>
-    </div>
+    <!-- Table card -->
+    <UCard :ui="{ body: { padding: '' } }">
+      <div v-if="pending" class="text-center py-12 text-sm text-gray-500 dark:text-neutral-400">
+        Loading…
+      </div>
+      <div v-else class="overflow-x-auto">
+        <table class="w-full border-collapse">
+          <thead>
+            <tr class="border-b border-gray-200 dark:border-neutral-800">
+              <th
+                class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-neutral-200">
+                Name</th>
+              <th
+                class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-neutral-200">
+                Email</th>
+              <th
+                class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-neutral-200">
+                Status</th>
+              <th
+                class="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-neutral-200">
+                Active sessions</th>
+              <th
+                class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-neutral-200">
+                Last login</th>
+              <th
+                class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-neutral-200">
+                Created</th>
+              <th
+                class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-neutral-200">
+                Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="u in items" :key="u.id"
+              class="border-b border-gray-100 dark:border-neutral-800 last:border-0 hover:bg-gray-50 dark:hover:bg-neutral-800/50 transition-colors">
+              <td class="px-4 py-3 font-medium text-sm text-gray-900 dark:text-white">{{ u.name ?? '—' }}</td>
+              <td class="px-4 py-3 font-mono text-xs text-gray-500 dark:text-neutral-400">{{ u.email }}</td>
+              <td class="px-4 py-3">
+                <UBadge :label="u.isActive ? 'Active' : 'Inactive'" :color="u.isActive ? 'success' : 'neutral'"
+                  variant="soft" size="sm" />
+              </td>
+              <td class="px-4 py-3 text-center text-sm text-gray-700 dark:text-neutral-300">{{ u._count?.sessions ?? 0
+                }}</td>
+              <td class="px-4 py-3 text-xs text-gray-500 dark:text-neutral-400">{{ u.lastLoginAt ?
+                fmtDateTime(u.lastLoginAt) : 'Never' }}</td>
+              <td class="px-4 py-3 text-xs text-gray-500 dark:text-neutral-400">{{ fmtDateTime(u.createdAt) }}</td>
+              <td class="px-4 py-3 whitespace-nowrap">
+                <UButton v-if="u.email !== me?.email" :label="u.isActive ? 'Deactivate' : 'Activate'"
+                  :color="u.isActive ? 'error' : 'success'" variant="soft" size="xs" @click="toggleActive(u)" />
+                <span v-else class="text-xs italic text-gray-400 dark:text-neutral-500">You</span>
+              </td>
+            </tr>
+            <tr v-if="!items.length">
+              <td colspan="7" class="text-center py-12 text-sm text-gray-500 dark:text-neutral-400">
+                No admin users
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </UCard>
 
     <!-- Create modal -->
-    <div v-if="showCreate" class="modal-overlay" @click.self="closeCreate">
-      <div class="modal">
-        <div class="modal-title">Add Admin User</div>
-        <div class="form-field">
-          <label>Email</label>
-          <input v-model="form.email" type="email" placeholder="admin@company.com" />
+    <div v-if="showCreate" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
+      @click.self="closeCreate">
+      <UCard class="w-full max-w-md" :ui="{ body: { padding: 'p-0' } }">
+        <div class="flex items-center justify-between px-5 py-4 border-b border-gray-200 dark:border-neutral-800">
+          <h2 class="text-base font-semibold text-gray-900 dark:text-white">Add Admin User</h2>
+          <UButton icon="i-heroicons-x-mark" color="neutral" variant="ghost" size="sm" @click="closeCreate" />
         </div>
-        <div class="form-field">
-          <label>Name (optional)</label>
-          <input v-model="form.name" placeholder="Full name" />
+        <div class="px-5 py-5 flex flex-col gap-4">
+          <div class="flex flex-col gap-1.5">
+            <label class="text-xs font-medium text-gray-700 dark:text-neutral-200">Email</label>
+            <UInput v-model="form.email" type="email" placeholder="admin@company.com" />
+          </div>
+          <div class="flex flex-col gap-1.5">
+            <label class="text-xs font-medium text-gray-700 dark:text-neutral-200">
+              Name
+              <span class="text-gray-400 dark:text-neutral-500 font-normal ml-1">(optional)</span>
+            </label>
+            <UInput v-model="form.name" placeholder="Full name" />
+          </div>
+          <div v-if="createError"
+            class="text-xs text-red-500 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 rounded-md px-3 py-2">
+            {{ createError }}
+          </div>
+          <div class="flex justify-end gap-2 pt-1">
+            <UButton label="Cancel" color="neutral" variant="outline" @click="closeCreate" />
+            <UButton :label="creating ? 'Adding…' : 'Add User'" color="warning" variant="soft"
+              :disabled="!form.email || creating" @click="createUser" />
+          </div>
         </div>
-        <div v-if="createError" class="error-msg">{{ createError }}</div>
-        <div class="modal-actions">
-          <button class="btn-ghost" @click="closeCreate">Cancel</button>
-          <button class="btn-primary" :disabled="!form.email || creating" @click="createUser">
-            {{ creating ? "Adding…" : "Add User" }}
-          </button>
-        </div>
-      </div>
+      </UCard>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import { fmtDateTime as fmtDateTimeFn } from '~/utils/fmtDate'
 definePageMeta({ layout: "admin", middleware: "admin-auth" })
+
+const { $t, $getLocale } = useI18n()
+function fmtDateTime(iso: string | null | undefined) {
+  return fmtDateTimeFn(iso, $getLocale())
+}
 
 const { admin: me } = useAdmin()
 const showCreate = ref(false)
@@ -68,7 +122,7 @@ const { data, pending, refresh } = await useFetch("/api/admin/users")
 const items = computed(() => (data.value as any)?.items ?? [])
 
 function fmtDate(iso: string) {
-  return new Date(iso).toLocaleString("en-GB", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })
+  return new Date(iso).toLocaleString("en-GB", { day: "2-digit", month: "short", year: "2-digit", hour: "2-digit", minute: "2-digit", second: "2-digit" })
 }
 
 async function createUser() {
@@ -96,39 +150,3 @@ function closeCreate() {
   showCreate.value = false; form.email = ""; form.name = ""; createError.value = ""
 }
 </script>
-
-<style scoped>
-.page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
-.page-title { font-size: 22px; font-weight: 600; color: #f0f0f0; letter-spacing: -0.3px; }
-.btn-primary { background: #f59e0b; color: #0a0a0a; border: none; border-radius: 7px; padding: 9px 16px; font-size: 13px; font-weight: 700; cursor: pointer; font-family: inherit; transition: opacity 0.15s; }
-.btn-primary:hover:not(:disabled) { opacity: 0.88; }
-.btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
-.btn-ghost { background: transparent; border: 1px solid #2a2a2a; border-radius: 7px; color: #666; font-size: 13px; padding: 9px 16px; cursor: pointer; font-family: inherit; }
-.table-wrap { background: #141414; border: 1px solid #1e1e1e; border-radius: 12px; overflow: hidden; }
-.table { width: 100%; border-collapse: collapse; }
-.table thead tr { border-bottom: 1px solid #1e1e1e; }
-.table th { padding: 12px 14px; font-size: 11px; font-weight: 600; color: #444; text-align: left; text-transform: uppercase; letter-spacing: 0.5px; }
-.table-row { border-bottom: 1px solid #1a1a1a; }
-.table-row:last-child { border-bottom: none; }
-td { padding: 11px 14px; font-size: 13px; color: #bbb; vertical-align: middle; }
-.td-mono { font-family: 'DM Mono', monospace; font-size: 12px; color: #888; }
-.td-label { font-weight: 500; color: #d0d0d0; }
-.td-muted { color: #666; font-size: 12px; }
-.td-empty, .table-loading { text-align: center; color: #444; padding: 40px; font-size: 14px; }
-.td-actions { white-space: nowrap; }
-.td-you { font-size: 11px; color: #444; font-style: italic; }
-.status-badge { display: inline-block; font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 5px; }
-.s-green { background: #0f2a1a; color: #22c55e; border: 1px solid #155233; }
-.s-gray  { background: #1a1a1a; color: #666; border: 1px solid #2a2a2a; }
-.action-btn { font-size: 11px; padding: 4px 10px; border-radius: 5px; cursor: pointer; border: 1px solid; font-family: inherit; }
-.action-deactivate { background: #2a0f0f; color: #ef4444; border-color: #521515; }
-.action-activate   { background: #0f2a1a; color: #22c55e; border-color: #155233; }
-.modal-overlay { position: fixed; inset: 0; background: #00000088; z-index: 200; display: flex; align-items: center; justify-content: center; padding: 20px; }
-.modal { background: #161616; border: 1px solid #2a2a2a; border-radius: 14px; padding: 28px; width: 100%; max-width: 400px; }
-.modal-title { font-size: 16px; font-weight: 600; color: #f0f0f0; margin-bottom: 22px; }
-.form-field { margin-bottom: 16px; }
-.form-field label { display: block; font-size: 12px; color: #666; margin-bottom: 6px; }
-.form-field input { width: 100%; background: #0f0f0f; border: 1px solid #2a2a2a; border-radius: 7px; color: #ccc; font-size: 13px; padding: 9px 12px; outline: none; font-family: inherit; box-sizing: border-box; }
-.error-msg { font-size: 12px; color: #ef4444; margin-bottom: 12px; }
-.modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
-</style>

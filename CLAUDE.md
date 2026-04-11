@@ -118,9 +118,53 @@ Failed jobs exceed max retries → moved to Dead Letter Queue (DLQ). DLQ can be 
 
 Nuxt frontend with `@nuxt/ui` (Tailwind v4). Admin dashboard at `/admin/*` uses magic-link email authentication. i18n via `nuxt-i18n-micro` with `th` (default) and `en` locales in `app/locales/`.
 
-Layout: `app/loyouts/admin.vue` (note: directory is spelled `loyouts`, not `layouts`)  
-Client-side route guard: `app/middleware/admin-auth.ts`  
+Layouts: `app/layouts/admin.vue`, `app/layouts/portal.vue`, `app/layouts/default.vue`
+Client-side route guard: `app/middleware/admin-auth.ts`
 Admin composable: `app/composables/useAdmin.ts`
+
+### UI Coding Rules (MUST follow always)
+
+1. **ห้าม hardcode ค่า** — ใช้ NuxtUI components และ Tailwind utilities เท่านั้น
+   - ❌ `style="color: #f59e0b"`, `style="height: 64px"`
+   - ✅ `class="text-amber-500"`, `class="h-16"`
+
+2. **ห้าม `@apply` กับ variants** ใน `<style scoped>` หรือ `@layer components`
+   - ❌ `@apply dark:bg-neutral-900 hover:text-white disabled:opacity-50`
+   - ✅ ใส่ class ตรงใน template: `class="dark:bg-neutral-900 hover:text-white disabled:opacity-50"`
+   - Tailwind v4 ไม่รองรับ variants ใน `@apply` → ทำให้ Vite crash (IPC error)
+
+3. **CSS variables** — override ผ่าน `app/assets/css/main.css` ใน `:root` (นอก layer เท่านั้น ถึงจะ override `@layer theme` ของ NuxtUI ได้)
+   - เช่น `--ui-header-height`, `--ui-radius`, `--font-sans`, `--font-mono`
+
+4. **Fonts** — Inter (EN) + Anuphan (TH) + Fira Code (mono) ผ่าน CSS variables
+   - sans: `font-sans` | mono (IDs/codes/keys): `font-mono`
+
+5. **Icons** — ใช้ `i-lucide-*` (ติดตั้งแล้ว) หรือ `i-heroicons-*`
+
+6. **ก่อนใช้ component ใดก็ตาม — ต้องเช็ค `package.json` ก่อนเสมอ** เพื่อยึด version จริงที่ใช้
+   ปัจจุบัน: `@nuxt/ui: ^4.6.1`, `nuxt: ^4.0.0`, `tailwindcss: ^4.2.2`
+
+   **NuxtUI v4** — `:ui` prop ส่งเป็น `string` ไม่ใช่ object ซ้อน object
+   ```vue
+   <!-- ❌ v3 style — TypeScript error -->
+   <UCard :ui="{ body: { padding: 'p-0' } }">
+
+   <!-- ✅ v4 style — string ตรงๆ -->
+   <UCard :ui="{ body: 'p-0' }">
+   <UCard :ui="{ root: 'rounded-xl', header: 'px-4 py-3', body: 'p-0', footer: 'px-4 py-3' }">
+   ```
+   UCard parts: `root`, `header`, `body`, `footer`
+
+### Table Standards (มาตรฐานตาราง — บังคับใช้ทุกหน้าใหม่)
+
+| Element | Class |
+|---------|-------|
+| ขนาดตัวอักษรทั่วไป | `text-sm` (default ทุกที่) |
+| หัวตาราง (th) | `text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-neutral-200` |
+| ข้อมูลในแถว (td) | `text-sm text-gray-700 dark:text-neutral-300` |
+| ข้อความ muted/secondary | `text-xs text-gray-500 dark:text-neutral-400` |
+| Monospace (ID/code/key) | `font-mono text-xs text-gray-500 dark:text-neutral-400` |
+| Icon ในตาราง | `w-6 h-6` |
 
 ### Key Infrastructure (`server/lib/`)
 

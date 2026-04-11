@@ -700,7 +700,7 @@ pre {
   padding: 12px;
 }
 .mono {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-family: var(--font-mono);
 }
 .small {
   font-size: 12px;

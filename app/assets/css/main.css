@@ -1,12 +1,19 @@
 @import "tailwindcss";
 @import "@nuxt/ui";
 
+/* Override NuxtUI/Tailwind theme tokens — ต้องอยู่นอก layer ถึงจะชนะ @layer theme */
+:root {
+  --font-sans: 'Inter', 'Anuphan', sans-serif;
+  --font-mono: 'Fira Code', monospace;
+}
+
 @layer base {
   html {
     scroll-behavior: smooth;
+    font-family: var(--font-sans);
   }
-  
+
   body {
-    font-family: 'Inter', 'Anuphan', sans-serif;
+    font-family: var(--font-sans);
   }
 }

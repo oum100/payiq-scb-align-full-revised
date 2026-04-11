@@ -1,71 +1,155 @@
 <template>
-  <div>
-    <div class="page-header">
-      <h1 class="page-title">API Keys</h1>
-      <button class="btn-primary" @click="showCreate = true">+ New API Key</button>
+  <div class="space-y-6">
+    <!-- Header -->
+    <div class="flex items-center justify-between">
+      <h1 class="text-2xl font-semibold tracking-tight text-gray-900 dark:text-white">
+        API Keys
+      </h1>
+      <UButton
+        icon="i-heroicons-plus"
+        color="amber"
+        variant="solid"
+        size="sm"
+        @click="showCreate = true"
+      >
+        New API Key
+      </UButton>
     </div>
 
-    <div class="table-wrap">
-      <div v-if="pending" class="table-loading">Loading…</div>
-      <table v-else class="table">
-        <thead>
-          <tr><th>Prefix</th><th>Name</th><th>Status</th><th>Environment</th><th>Scopes</th><th>Merchant</th><th>Last used</th><th>Actions</th></tr>
-        </thead>
-        <tbody>
-          <tr v-for="k in items" :key="k.id" class="table-row">
-            <td class="td-mono">{{ k.keyPrefix }}</td>
-            <td class="td-label">{{ k.name }}</td>
-            <td><span class="status-badge" :class="k.status === 'ACTIVE' ? 's-green' : 's-gray'">{{ k.status }}</span></td>
-            <td><span class="env-badge" :class="k.environment === 'LIVE' ? 'env-live' : 'env-test'">{{ k.environment }}</span></td>
-            <td class="td-scopes">
-              <span v-for="sc in k.scopes" :key="sc" class="scope-tag">{{ sc }}</span>
-            </td>
-            <td class="td-muted">{{ k.merchantAccount?.name ?? "Tenant-level" }}</td>
-            <td class="td-muted">{{ k.lastUsedAt ? fmtDate(k.lastUsedAt) : "Never" }}</td>
-            <td class="td-actions">
-              <button v-if="k.status === 'ACTIVE'" class="action-btn action-revoke" @click="revoke(k.id)">Revoke</button>
-            </td>
-          </tr>
-          <tr v-if="!items.length"><td colspan="8" class="td-empty">No API keys found</td></tr>
-        </tbody>
-      </table>
-    </div>
+    <!-- Table -->
+    <UCard :ui="{ body: 'p-0' }">
+      <div v-if="pending" class="flex items-center justify-center py-16 text-gray-500 dark:text-neutral-400 text-sm">
+        Loading…
+      </div>
+      <div v-else-if="!items.length" class="flex items-center justify-center py-16 text-gray-500 dark:text-neutral-400 text-sm">
+        No API keys found
+      </div>
+      <div v-else class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="border-b border-gray-200 dark:border-neutral-800">
+              <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-neutral-200">Prefix</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-neutral-200">Name</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-neutral-200">Status</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-neutral-200">Environment</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-neutral-200">Scopes</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-neutral-200">Merchant</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-neutral-200">Last used</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-neutral-200">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              v-for="k in items"
+              :key="k.id"
+              class="border-b border-gray-100 dark:border-neutral-800 last:border-0 hover:bg-gray-50 dark:hover:bg-neutral-800/50 transition-colors"
+            >
+              <td class="px-4 py-3 font-mono text-xs text-gray-500 dark:text-neutral-400">{{ k.keyPrefix }}</td>
+              <td class="px-4 py-3 font-medium text-gray-900 dark:text-white">{{ k.name }}</td>
+              <td class="px-4 py-3">
+                <UBadge :color="k.status === 'ACTIVE' ? 'green' : 'neutral'" variant="subtle" size="xs">{{ k.status }}</UBadge>
+              </td>
+              <td class="px-4 py-3">
+                <UBadge :color="k.environment === 'LIVE' ? 'green' : 'blue'" variant="subtle" size="xs">{{ k.environment }}</UBadge>
+              </td>
+              <td class="px-4 py-3">
+                <div class="flex flex-wrap gap-1">
+                  <UBadge v-for="sc in k.scopes" :key="sc" color="blue" variant="subtle" size="xs">{{ sc }}</UBadge>
+                </div>
+              </td>
+              <td class="px-4 py-3 text-gray-500 dark:text-neutral-400 text-xs">{{ k.merchantAccount?.name ?? "Tenant-level" }}</td>
+              <td class="px-4 py-3 text-gray-500 dark:text-neutral-400 text-xs">{{ k.lastUsedAt ? fmtDate(k.lastUsedAt) : "Never" }}</td>
+              <td class="px-4 py-3">
+                <UButton
+                  v-if="k.status === 'ACTIVE'"
+                  color="red"
+                  variant="subtle"
+                  size="xs"
+                  @click="revoke(k.id)"
+                >
+                  Revoke
+                </UButton>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </UCard>
 
     <!-- Create modal -->
-    <div v-if="showCreate" class="modal-overlay" @click.self="showCreate = false">
-      <div class="modal">
-        <div class="modal-title">Create API Key</div>
-        <div class="form-field">
-          <label>Name</label>
-          <input v-model="form.name" placeholder="e.g. Production key" />
-        </div>
-        <div class="form-field">
-          <label>Scopes</label>
-          <div class="scope-checkboxes">
-            <label v-for="s in ALL_SCOPES" :key="s" class="scope-check">
-              <input type="checkbox" :value="s" v-model="form.scopes" /> {{ s }}
-            </label>
+    <div
+      v-if="showCreate"
+      class="fixed inset-0 z-50 flex items-center justify-center p-5 bg-black/50"
+      @click.self="showCreate = false"
+    >
+      <UCard class="w-full max-w-md" :ui="{ body: 'p-7' }">
+        <template #header>
+          <h2 class="text-base font-semibold text-gray-900 dark:text-white">Create API Key</h2>
+        </template>
+
+        <div class="space-y-4">
+          <!-- Name -->
+          <div>
+            <label class="block text-xs font-medium text-gray-500 dark:text-neutral-400 mb-1">Name</label>
+            <UInput v-model="form.name" placeholder="e.g. Production key" class="w-full" />
+          </div>
+
+          <!-- Environment -->
+          <div>
+            <label class="block text-xs font-medium text-gray-500 dark:text-neutral-400 mb-1">Environment</label>
+            <USelect
+              v-model="form.environment"
+              :options="[{ label: 'TEST', value: 'TEST' }, { label: 'LIVE', value: 'LIVE' }]"
+              class="w-full"
+            />
+          </div>
+
+          <!-- Scopes -->
+          <div>
+            <label class="block text-xs font-medium text-gray-500 dark:text-neutral-400 mb-2">Scopes</label>
+            <div class="flex flex-wrap gap-2">
+              <label
+                v-for="s in ALL_SCOPES"
+                :key="s"
+                class="flex items-center gap-2 text-xs text-gray-700 dark:text-neutral-200 cursor-pointer select-none"
+              >
+                <input type="checkbox" :value="s" v-model="form.scopes" class="rounded" />
+                {{ s }}
+              </label>
+            </div>
+          </div>
+
+          <!-- New key banner -->
+          <div
+            v-if="createdKey"
+            class="rounded-lg border border-amber-400/30 bg-amber-50 dark:bg-amber-950/30 p-4 space-y-2"
+          >
+            <p class="text-xs font-semibold text-amber-700 dark:text-amber-400">
+              Copy this key — it won't be shown again
+            </p>
+            <code class="block font-mono text-xs text-gray-800 dark:text-neutral-200 break-all">{{ createdKey }}</code>
+            <UButton size="xs" color="amber" variant="outline" @click="copy(createdKey)">
+              {{ copied ? "Copied!" : "Copy" }}
+            </UButton>
           </div>
         </div>
-        <div class="form-field">
-          <label>Environment</label>
-          <select v-model="form.environment">
-            <option value="TEST">TEST</option>
-            <option value="LIVE">LIVE</option>
-          </select>
-        </div>
-        <div v-if="createdKey" class="new-key-banner">
-          <div class="new-key-label">⚠ Copy this key — it won't be shown again</div>
-          <code class="new-key-val">{{ createdKey }}</code>
-          <button class="copy-btn" @click="copy(createdKey)">{{ copied ? "Copied!" : "Copy" }}</button>
-        </div>
-        <div class="modal-actions">
-          <button class="btn-ghost" @click="closeCreate">Close</button>
-          <button v-if="!createdKey" class="btn-primary" :disabled="!form.name || !form.scopes.length || creating" @click="createKey">
-            {{ creating ? "Creating…" : "Create" }}
-          </button>
-        </div>
-      </div>
+
+        <template #footer>
+          <div class="flex justify-end gap-2">
+            <UButton color="neutral" variant="ghost" @click="closeCreate">Close</UButton>
+            <UButton
+              v-if="!createdKey"
+              color="amber"
+              variant="solid"
+              :disabled="!form.name || !form.scopes.length || creating"
+              :loading="creating"
+              @click="createKey"
+            >
+              Create
+            </UButton>
+          </div>
+        </template>
+      </UCard>
     </div>
   </div>
 </template>
@@ -73,7 +157,7 @@
 <script setup lang="ts">
 definePageMeta({ layout: "admin", middleware: "admin-auth" })
 
-const ALL_SCOPES = ["payments:create","payments:read","api_keys:manage","webhooks:manage"]
+const ALL_SCOPES = ["payments:create", "payments:read", "api_keys:manage", "webhooks:manage"]
 
 const showCreate = ref(false)
 const creating = ref(false)
@@ -112,8 +196,12 @@ async function revoke(id: string) {
 }
 
 function closeCreate() {
-  showCreate.value = false; createdKey.value = ""; copied.value = false
-  form.name = ""; form.scopes = []; form.environment = "TEST"
+  showCreate.value = false
+  createdKey.value = ""
+  copied.value = false
+  form.name = ""
+  form.scopes = []
+  form.environment = "TEST"
 }
 
 async function copy(text: string) {
@@ -122,50 +210,3 @@ async function copy(text: string) {
   setTimeout(() => { copied.value = false }, 2000)
 }
 </script>
-
-<style scoped>
-.page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
-.page-title { font-size: 22px; font-weight: 600; color: #f0f0f0; letter-spacing: -0.3px; }
-.btn-primary { background: #f59e0b; color: #0a0a0a; border: none; border-radius: 7px; padding: 9px 16px; font-size: 13px; font-weight: 700; cursor: pointer; font-family: inherit; transition: opacity 0.15s; }
-.btn-primary:hover:not(:disabled) { opacity: 0.88; }
-.btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
-.btn-ghost { background: transparent; border: 1px solid #2a2a2a; border-radius: 7px; color: #666; font-size: 13px; padding: 9px 16px; cursor: pointer; font-family: inherit; transition: color 0.15s; }
-.btn-ghost:hover { color: #aaa; }
-.table-wrap { background: #141414; border: 1px solid #1e1e1e; border-radius: 12px; overflow: hidden; }
-.table { width: 100%; border-collapse: collapse; }
-.table thead tr { border-bottom: 1px solid #1e1e1e; }
-.table th { padding: 12px 14px; font-size: 11px; font-weight: 600; color: #444; text-align: left; text-transform: uppercase; letter-spacing: 0.5px; }
-.table-row { border-bottom: 1px solid #1a1a1a; }
-.table-row:last-child { border-bottom: none; }
-td { padding: 11px 14px; font-size: 13px; color: #bbb; vertical-align: middle; }
-.td-mono { font-family: 'DM Mono', monospace; font-size: 12px; color: #888; }
-.td-label { font-weight: 500; color: #d0d0d0; }
-.td-muted { color: #666; font-size: 12px; }
-.td-empty, .table-loading { text-align: center; color: #444; padding: 40px; font-size: 14px; }
-.td-scopes { display: flex; flex-wrap: wrap; gap: 4px; }
-.td-actions { white-space: nowrap; }
-.scope-tag { font-size: 10px; background: #1a1a2a; color: #60a5fa; border: 1px solid #1e2a40; border-radius: 4px; padding: 2px 6px; }
-.status-badge { display: inline-block; font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 5px; }
-.s-green { background: #0f2a1a; color: #22c55e; border: 1px solid #155233; }
-.s-gray  { background: #1a1a1a; color: #666; border: 1px solid #2a2a2a; }
-.env-badge { display: inline-block; font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 4px; letter-spacing: 0.5px; }
-.env-live { background: #0f2a1a; color: #22c55e; }
-.env-test { background: #1a1a2a; color: #60a5fa; }
-.action-btn { font-size: 11px; padding: 4px 10px; border-radius: 5px; cursor: pointer; border: 1px solid; font-family: inherit; transition: opacity 0.15s; }
-.action-revoke { background: #2a0f0f; color: #ef4444; border-color: #521515; }
-.action-revoke:hover { opacity: 0.8; }
-.modal-overlay { position: fixed; inset: 0; background: #00000088; z-index: 200; display: flex; align-items: center; justify-content: center; padding: 20px; }
-.modal { background: #161616; border: 1px solid #2a2a2a; border-radius: 14px; padding: 28px; width: 100%; max-width: 440px; }
-.modal-title { font-size: 16px; font-weight: 600; color: #f0f0f0; margin-bottom: 22px; }
-.form-field { margin-bottom: 16px; }
-.form-field label { display: block; font-size: 12px; color: #666; margin-bottom: 6px; font-weight: 500; }
-.form-field input, .form-field select { width: 100%; background: #0f0f0f; border: 1px solid #2a2a2a; border-radius: 7px; color: #ccc; font-size: 13px; padding: 9px 12px; outline: none; font-family: inherit; box-sizing: border-box; }
-.scope-checkboxes { display: flex; flex-wrap: wrap; gap: 8px; }
-.scope-check { display: flex; align-items: center; gap: 6px; font-size: 12px; color: #888; cursor: pointer; }
-.scope-check input { width: auto; }
-.new-key-banner { background: #1a1500; border: 1px solid #3a2f00; border-radius: 8px; padding: 14px; margin: 16px 0; }
-.new-key-label { font-size: 12px; color: #f59e0b; margin-bottom: 8px; font-weight: 600; }
-.new-key-val { display: block; font-family: 'DM Mono', monospace; font-size: 12px; color: #d0d0d0; word-break: break-all; margin-bottom: 10px; }
-.copy-btn { background: #2a2200; border: 1px solid #3a3000; border-radius: 5px; color: #f59e0b; font-size: 12px; padding: 5px 12px; cursor: pointer; font-family: inherit; }
-.modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
-</style>

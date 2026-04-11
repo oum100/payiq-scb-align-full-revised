@@ -1,7 +1,7 @@
 {
   "nav": {
-    "title": "PayIQ Internal",
-    "webhookDeliveries": "Webhook Deliveries"
+    "title": "ระบบภายใน PayIQ ",
+    "webhookDeliveries": "Webhook ส่งไปให้ Merchant System"
   },
   "theme": {
     "light": "สว่าง",
@@ -114,12 +114,30 @@
       "redirecting": "กำลังนำไปยังพอร์ทัล…",
       "backToLogin": "← กลับไปหน้าเข้าสู่ระบบ",
       "errors": {
-        "invalid_token": { "title": "ไม่พบลิงก์", "msg": "ลิงก์เข้าสู่ระบบไม่ถูกต้องหรือหมดอายุแล้ว" },
-        "token_used": { "title": "ลิงก์ถูกใช้แล้ว", "msg": "ลิงก์นี้ถูกใช้งานแล้ว กรุณาขอลิงก์ใหม่" },
-        "token_expired": { "title": "ลิงก์หมดอายุ", "msg": "ลิงก์หมดอายุหลัง 15 นาที กรุณาขอลิงก์ใหม่" },
-        "inactive": { "title": "บัญชีถูกระงับ", "msg": "บัญชีของคุณถูกปิดใช้งาน กรุณาติดต่อผู้ดูแลระบบ" },
-        "no_token": { "title": "ไม่มี token", "msg": "ลิงก์เข้าสู่ระบบไม่สมบูรณ์" },
-        "error": { "title": "เกิดข้อผิดพลาด", "msg": "เกิดข้อผิดพลาดที่ไม่คาดคิด กรุณาลองใหม่" }
+        "invalid_token": {
+          "title": "ไม่พบลิงก์",
+          "msg": "ลิงก์เข้าสู่ระบบไม่ถูกต้องหรือหมดอายุแล้ว"
+        },
+        "token_used": {
+          "title": "ลิงก์ถูกใช้แล้ว",
+          "msg": "ลิงก์นี้ถูกใช้งานแล้ว กรุณาขอลิงก์ใหม่"
+        },
+        "token_expired": {
+          "title": "ลิงก์หมดอายุ",
+          "msg": "ลิงก์หมดอายุหลัง 15 นาที กรุณาขอลิงก์ใหม่"
+        },
+        "inactive": {
+          "title": "บัญชีถูกระงับ",
+          "msg": "บัญชีของคุณถูกปิดใช้งาน กรุณาติดต่อผู้ดูแลระบบ"
+        },
+        "no_token": {
+          "title": "ไม่มี token",
+          "msg": "ลิงก์เข้าสู่ระบบไม่สมบูรณ์"
+        },
+        "error": {
+          "title": "เกิดข้อผิดพลาด",
+          "msg": "เกิดข้อผิดพลาดที่ไม่คาดคิด กรุณาลองใหม่"
+        }
       }
     },
     "dashboard": {
@@ -139,6 +157,136 @@
       "recentPayments": "การชำระเงินล่าสุด",
       "viewAll": "ดูทั้งหมด",
       "noPayments": "ประวัติการชำระเงินจะแสดงที่นี่"
+    },
+    "signOut": "ออกจากระบบ"
+  },
+  "admin": {
+    "nav": {
+      "overview": "ภาพรวม",
+      "dashboard": "แดชบอร์ด",
+      "payments": "การชำระเงิน",
+      "callbacks": "Callbacks",
+      "webhooks": "Webhooks",
+      "queueHealth": "สถานะคิว",
+      "tenants": "Tenants",
+      "merchants": "Merchants",
+      "apiKeys": "API Keys",
+      "adminUsers": "ผู้ดูแลระบบ"
+    },
+    "dashboard": {
+      "shortTitle": "แดชบอร์ด",
+      "title": "แดชบอร์ด",
+      "subtitle": "ยินดีต้อนรับกลับ",
+      "stats": {
+        "totalPayments": "รายการทั้งหมด",
+        "succeeded": "สำเร็จ",
+        "pending": "รอดำเนินการ",
+        "failed": "ล้มเหลว"
+      }
+    },
+    "payment": {
+      "shortTitle": "รายการชำระเงิน",
+      "title": "รายการชำระเงิน",
+      "id": "รหัสรายการ",
+      "amount": "จำนวนเงิน",
+      "currency": "สกุลเงิน",
+      "status": "สถานะ",
+      "createdAt": "สร้างเมื่อ",
+      "merchantRef": "รหัสอ้างอิง Merchant",
+      "providerRef": "อ้างอิง Provider"
+    },
+    "paymentDetail": {
+      "back": "ย้อนกลับ",
+      "loading": "กำลังโหลด…",
+      "notFound": "ไม่พบรายการชำระเงิน",
+      "paymentInfo": "ข้อมูลการชำระเงิน",
+      "references": "รหัสอ้างอิง",
+      "timestamps": "เวลาดำเนินการ",
+      "customer": "ลูกค้า",
+      "amount": "ยอดชำระ",
+      "currency": "สกุลเงิน",
+      "method": "วิธีชำระ",
+      "provider": "ผู้ให้บริการ",
+      "description": "รายละเอียด",
+      "publicId": "Public ID",
+      "orderId": "รหัสคำสั่งซื้อ",
+      "merchantRef": "รหัสอ้างอิง Merchant",
+      "providerTxn": "รหัส Txn ผู้ให้บริการ",
+      "providerRef": "รหัสอ้างอิง ผู้ให้บริการ",
+      "created": "สร้างเมื่อ",
+      "expires": "หมดอายุ",
+      "succeeded": "สำเร็จเมื่อ",
+      "failed": "ล้มเหลวเมื่อ",
+      "name": "ชื่อ",
+      "email": "อีเมล",
+      "phone": "โทรศัพท์",
+      "merchant": "ร้านค้า",
+      "tenant": "Tenant",
+      "qrCode": "QR Code PromptPay",
+      "qrPayload": "ข้อมูล QR (raw)",
+      "providerCallbacks": "การแจ้งกลับจาก Provider",
+      "signatureValid": "ลายเซ็น",
+      "processStatus": "สถานะประมวลผล",
+      "receivedAt": "รับเมื่อ",
+      "eventTimeline": "ลำดับเหตุการณ์",
+      "noEvents": "ยังไม่มีเหตุการณ์",
+      "selectEvent": "เลือก event เพื่อดูรายละเอียด",
+      "providerAttempts": "การส่งคำขอไปยัง Provider",
+      "webhookDeliveries": "การส่ง Webhook",
+      "type": "ประเภท",
+      "httpStatus": "HTTP",
+      "sentAt": "ส่งเมื่อ",
+      "attempts": "ครั้งที่",
+      "endpoint": "ปลายทาง",
+      "requestHeaders": "Request Headers",
+        "requestBody": "Request Body",
+        "responseHeaders": "Response Headers",
+        "responseBody": "Response Body",
+        "copy": "คัดลอก",
+      "copyQrText": "คัดลอกข้อมูล QR",
+      "downloadQr": "ดาวน์โหลด QR Image"
+    },
+    "webhook": {
+      "shortTitle": "การแจ้งต่อ",
+      "title": "รายการการส่ง webhook ไปยัง Merchant System",
+      "id": "ID",
+      "eventType": "ประเภท Event",
+      "status": "สถานะ",
+      "attempts": "พยายามส่ง",
+      "paymentId": "รหัสการชำระเงิน",
+      "endPoint": "ส่งไปที่",
+      "http_status": "สถานะ HTTP",
+      "createdAt": "ส่งเมื่อ",
+      "total": "ทั้งหมด",
+      "delivered": "ส่งสำเร็จ",
+      "retrying": "กำลังส่งใหม่",
+      "dead": "ส่งล้มเหลว",
+      "last24h": "24 ชั่วโมงที่แล้ว"
+    },
+    "callback": {
+      "shortTitle": "การแจ้งกลับ",
+      "title": "รายการ แจ้งกลับอัตโนมัติจาก ผู้ให้บริการ",
+      "id": "รหัสรายการ",
+      "provider": "ผู้ให้บริการ",
+      "status": "สถานะ",
+      "sig_valid": "SIG.VAILD",
+      "providerRef": "รหัสอ้างอิง ผู้ให้บริการ",
+      "providerTxn": "รหัสธุรกรรม ผู้ให้บริการ",
+      "receivedAt": "ได้รับเมื่อ",
+      "error": "ข้อผิดผลาด"
+    },
+    "queue": {
+      "shortTitle": "สถานะคิว",
+      "title": "สถานะการทำงานของ Queue",
+      "webhoonInbound": "Webhook Inbound",
+      "webhookInboundDLQ": "Webhook Inbound",
+      "webhook": "Webhook",
+      "webhookDLQ": "Webhook DLQ",
+      "Callback": "Callback",
+      "callbackDLQ": "Callback DLQ",
+      "Reconcile": "Reconcile",
+      "reconcileDLQ": "Reconcile DLQ",
+      "lastUpdated": "อัพเดทล่าสุด"
     },
     "signOut": "ออกจากระบบ"
   }

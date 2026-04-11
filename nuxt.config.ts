@@ -19,6 +19,8 @@ export default defineNuxtConfig({
   css: ["./app/assets/css/main.css"],
 
   modules: [
+    '@pinia/nuxt',  // ตัวเชื่อม Pinia เข้ากับ Nuxt
+    'pinia-plugin-persistedstate/nuxt', // ตัวนี้จะจัดการเรื่อง localStorage ให้เราอัตโนมัติ
     "@nuxt/ui",
     [
       "nuxt-i18n-micro",
@@ -41,6 +43,7 @@ export default defineNuxtConfig({
         families: {
           Inter: "200..700",
           Anuphan: ["400", "500"],
+          "Fira Code": ["400", "500"],
         },
         display: "swap", // ใช้ค่า display เป็น swap สำหรับประสิทธิภาพที่ดีขึ้น
         preload: true, // เปิดใช้งาน preload เพือประสิทธิภาพที่ดีขึ้น
