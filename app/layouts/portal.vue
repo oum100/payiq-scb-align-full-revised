@@ -32,7 +32,7 @@ function toggleColorMode() {
 </script>
 
 <template>
-  <div class="min-h-screen bg-gray-50 dark:bg-neutral-950 transition-colors font-sans">
+  <div class="min-h-screen bg-slate-100 dark:bg-neutral-950 transition-colors font-sans">
     <!-- Topbar -->
     <header
       class="sticky top-0 z-50 border-b border-gray-200 dark:border-neutral-800 bg-white/90 dark:bg-neutral-900/90 backdrop-blur">

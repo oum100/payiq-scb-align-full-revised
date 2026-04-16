@@ -73,7 +73,7 @@
                 <span v-else class="text-gray-400 dark:text-neutral-600">—</span>
               </td>
               <td class="px-4 py-3 font-sans text-sm text-gray-500 dark:text-neutral-400">{{ cb.providerReference ?? "—"
-                }}</td>
+              }}</td>
               <td class="px-4 py-3 font-sans text-sm text-gray-500 dark:text-neutral-400">{{ cb.providerTxnId ?? "—" }}
               </td>
               <td class="px-4 py-3 text-sm text-gray-500 dark:text-neutral-400">{{ fmtDateTime(cb.receivedAt) }}</td>
@@ -102,11 +102,14 @@
 </template>
 
 <script setup lang="ts">
+
 import { fmtDateTime as fmtDateTimeFn } from '~/utils/fmtDate'
 
 definePageMeta({ layout: "admin", middleware: "admin-auth" })
 
+
 const { $t, $getLocale } = useI18n()
+
 
 function fmtDateTime(iso: string | null | undefined) {
   return fmtDateTimeFn(iso, $getLocale())

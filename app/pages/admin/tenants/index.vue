@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-gray-50 dark:bg-neutral-950 p-6">
+  <div class="min-h-screen bg-slate-100 dark:bg-neutral-950 p-6">
     <!-- Page header -->
     <div class="flex items-start justify-between mb-6">
       <div>
@@ -52,7 +52,8 @@
           </thead>
           <tbody>
             <tr v-for="t in items" :key="t.id"
-              class="border-b border-gray-100 dark:border-neutral-800 last:border-0 hover:bg-gray-50 dark:hover:bg-neutral-800/50 transition-colors">
+              class="border-b border-gray-100 dark:border-neutral-800 last:border-0 hover:bg-gray-50 dark:hover:bg-neutral-800/50 transition-colors cursor-pointer"
+              @click="navigateTo(`/admin/tenants/${t.id}`)">
               <td class="px-4 py-3">
                 <div class="font-medium text-gray-900 dark:text-white text-sm">{{ t.name }}</div>
                 <div class="font-sans text-sm text-gray-400 dark:text-neutral-500 mt-0.5">{{ t.code }}</div>
@@ -60,33 +61,17 @@
               <td class="px-4 py-3 flex items-center justify-center">
                 <UBadge :label="t.status" :color="statusColor(t.status)" variant="soft" size="sm" />
               </td>
-              <td class="px-4 py-3 text-center">
-                <NuxtLink :to="`/admin/tenants/${t.id}/users`"
-                  class="font-semibold text-sm text-amber-500 hover:text-amber-400 hover:underline transition-colors">
-                  {{ t._count?.tenantUsers ?? 0 }}
-                </NuxtLink>
-              </td>
-              <td class="px-4 py-3 text-center text-sm text-gray-700 dark:text-neutral-200">{{ t._count?.merchants ?? 0
-              }}</td>
-              <td class="px-4 py-3 text-center text-sm text-gray-700 dark:text-neutral-200">{{ t._count?.billerProfiles
-                ?? 0 }}</td>
-              <td class="px-4 py-3 text-center text-sm text-gray-700 dark:text-neutral-200">{{ t._count?.paymentRoutes
-                ?? 0 }}</td>
-              <td class="px-4 py-3 text-center text-sm text-gray-700 dark:text-neutral-200">{{ t._count?.apiKeys ?? 0 }}
-              </td>
-              <td class="px-4 py-3 text-center text-sm text-gray-700 dark:text-neutral-200">{{ t._count?.paymentIntents
-                ?? 0 }}</td>
+              <td class="px-4 py-3 text-center text-sm text-gray-700 dark:text-neutral-200">{{ t._count?.tenantUsers ?? 0 }}</td>
+              <td class="px-4 py-3 text-center text-sm text-gray-700 dark:text-neutral-200">{{ t._count?.merchants ?? 0 }}</td>
+              <td class="px-4 py-3 text-center text-sm text-gray-700 dark:text-neutral-200">{{ t._count?.billerProfiles ?? 0 }}</td>
+              <td class="px-4 py-3 text-center text-sm text-gray-700 dark:text-neutral-200">{{ t._count?.paymentRoutes ?? 0 }}</td>
+              <td class="px-4 py-3 text-center text-sm text-gray-700 dark:text-neutral-200">{{ t._count?.apiKeys ?? 0 }}</td>
+              <td class="px-4 py-3 text-center text-sm text-gray-700 dark:text-neutral-200">{{ t._count?.paymentIntents ?? 0 }}</td>
               <td class="px-4 py-3 text-sm text-gray-500 dark:text-neutral-400">{{ fmtDateTime(t.createdAt) }}</td>
               <td class="px-4 py-3">
                 <div class="flex items-center gap-1">
-                  <UButton :to="`/admin/tenants/${t.id}/users`" icon="i-lucide-users" color="neutral" variant="ghost"
-                    size="xs" title="Manage Users" />
-                  <UButton :to="`/admin/tenants/${t.id}/billers`" icon="i-lucide-building-2" color="neutral"
-                    variant="ghost" size="xs" title="Biller Profiles" />
-                  <UButton :to="`/admin/tenants/${t.id}/routes`" icon="i-lucide-route" color="neutral" variant="ghost"
-                    size="xs" title="Payment Routes" />
-                  <UButton icon="i-lucide-pencil" color="neutral" variant="ghost" size="xs" title="Edit"
-                    @click="openEdit(t)" />
+                  <UButton icon="i-lucide-pencil" color="neutral" variant="ghost" size="xs" title="Edit" @click.stop="openEdit(t)" />
+                  <UButton icon="i-lucide-trash-2" color="error" variant="ghost" size="xs" title="Delete" @click.stop="confirmDelete(t)" />
                 </div>
               </td>
             </tr>
@@ -99,6 +84,19 @@
         </table>
       </div>
     </UCard>
+
+    <!-- Delete Confirm -->
+    <div v-if="deleteTarget" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" @click.self="deleteTarget = null">
+      <UCard class="w-full max-w-sm" :ui="{ body: 'p-0' }">
+        <div class="px-5 py-5 flex flex-col gap-4">
+          <p class="text-sm text-gray-700 dark:text-neutral-300">Delete tenant <strong>{{ deleteTarget.name }}</strong>? This will permanently delete all merchants, billers, routes, users, and payments.</p>
+          <div class="flex justify-end gap-2">
+            <UButton label="Cancel" color="neutral" variant="outline" @click="deleteTarget = null" />
+            <UButton label="Delete" color="error" variant="soft" :loading="deleting" @click="doDelete" />
+          </div>
+        </div>
+      </UCard>
+    </div>
 
     <!-- Create / Edit Modal -->
     <div v-if="modal.open" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
@@ -201,6 +199,17 @@ function openEdit(t: TenantRow) {
   formError.value = ''; modal.open = true
 }
 function closeModal() { modal.open = false }
+
+const deleteTarget = ref<TenantRow | null>(null)
+const deleting = ref(false)
+function confirmDelete(t: TenantRow) { deleteTarget.value = t }
+async function doDelete() {
+  deleting.value = true
+  try {
+    await $fetch(`/api/admin/tenants/${deleteTarget.value!.id}`, { method: 'DELETE' })
+    await refresh(); deleteTarget.value = null
+  } finally { deleting.value = false }
+}
 
 async function submitModal() {
   formError.value = ''; submitting.value = true

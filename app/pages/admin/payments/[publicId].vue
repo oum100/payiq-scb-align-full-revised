@@ -281,13 +281,34 @@
 
               <!-- Provider Attempt detail (req/res) -->
               <div v-if="selectedAttempt" class="rounded-lg border border-gray-200 dark:border-neutral-700 overflow-hidden">
+                <!-- Header -->
                 <div class="flex items-center gap-3 px-4 py-2 bg-gray-50 dark:bg-neutral-900/60 border-b border-gray-200 dark:border-neutral-700">
-                  <span class="text-[11px] font-semibold uppercase tracking-wide text-gray-500 dark:text-neutral-400">{{ selectedAttempt.type }}</span>
+                  <span class="text-[11px] font-semibold uppercase tracking-wide text-gray-500 dark:text-neutral-400">{{ attemptTypeLabel }}</span>
                   <UBadge :color="selectedAttempt.status === 'SUCCEEDED' ? 'success' : 'error'" variant="subtle" size="xs" class="font-semibold">{{ selectedAttempt.status }}</UBadge>
-                  <span class="text-xs text-gray-500 dark:text-neutral-400">HTTP {{ selectedAttempt.httpStatusCode ?? '—' }}</span>
+                  <span v-if="!isLocalAttempt" class="text-xs text-gray-500 dark:text-neutral-400">HTTP {{ selectedAttempt.httpStatusCode ?? '—' }}</span>
+                  <span v-else class="text-xs text-amber-600 dark:text-amber-400 font-medium">⚙ Local — no external API call</span>
                   <span class="text-xs text-gray-400 dark:text-neutral-500 ml-auto">{{ selectedAttempt.sentAt ? fmtDate(selectedAttempt.sentAt) : '—' }}</span>
                 </div>
-                <div class="grid grid-cols-1 lg:grid-cols-2">
+
+                <!-- LOCAL generation: simplified config + output view -->
+                <div v-if="isLocalAttempt" class="p-4 flex flex-col gap-3">
+                  <p class="text-sm text-gray-500 dark:text-neutral-400">
+                    PromptPay QR payload was generated locally by the PayIQ engine using the tenant's receiving account configuration. No external API call was made.
+                  </p>
+                  <div class="grid grid-cols-1 lg:grid-cols-2 gap-3">
+                    <div>
+                      <p class="text-xs font-semibold text-gray-500 dark:text-neutral-400 mb-1">⚙ QR Config (input)</p>
+                      <pre class="font-mono text-xs text-gray-700 dark:text-neutral-300 bg-gray-50 dark:bg-neutral-900 border border-gray-200 dark:border-neutral-700 rounded px-3 py-2 overflow-auto max-h-48 whitespace-pre-wrap">{{ fmtJson(selectedAttempt.requestBody) }}</pre>
+                    </div>
+                    <div>
+                      <p class="text-xs font-semibold text-gray-500 dark:text-neutral-400 mb-1">✓ Generated QR (output)</p>
+                      <pre class="font-mono text-xs text-gray-700 dark:text-neutral-300 bg-gray-50 dark:bg-neutral-900 border border-gray-200 dark:border-neutral-700 rounded px-3 py-2 overflow-auto max-h-48 whitespace-pre-wrap">{{ fmtJson(selectedAttempt.responseBody) }}</pre>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- EXTERNAL API: full req/res view -->
+                <div v-else class="grid grid-cols-1 lg:grid-cols-2">
                   <!-- Request -->
                   <div class="border-b lg:border-b-0 lg:border-r border-gray-100 dark:border-neutral-800">
                     <div class="px-4 py-1.5 border-b border-gray-100 dark:border-neutral-800">
@@ -323,24 +344,44 @@
                 </div>
               </div>
 
-              <!-- Provider Callback detail -->
+              <!-- Provider Callback detail (SCB inbound) -->
               <div v-if="selectedCallback" class="rounded-lg border border-gray-200 dark:border-neutral-700 overflow-hidden">
-                <div class="px-4 py-2 bg-gray-50 dark:bg-neutral-900/60 border-b border-gray-200 dark:border-neutral-700">
-                  <span class="text-[11px] font-semibold uppercase tracking-wide text-gray-500 dark:text-neutral-400">{{ $t('admin.paymentDetail.providerCallbacks') }}</span>
+                <div class="px-4 py-2 bg-gray-50 dark:bg-neutral-900/60 border-b border-gray-200 dark:border-neutral-700 flex items-center gap-3">
+                  <span class="text-[11px] font-semibold uppercase tracking-wide text-gray-500 dark:text-neutral-400">Inbound Callback — {{ selectedCallback.providerCode }}</span>
+                  <UBadge :color="selectedCallback.signatureValid ? 'success' : 'error'" variant="subtle" size="xs">{{ selectedCallback.signatureValid ? '✓ Signature Valid' : '✗ Invalid Signature' }}</UBadge>
+                  <UBadge :color="selectedCallback.processStatus === 'PROCESSED' ? 'success' : 'warning'" variant="soft" size="xs">{{ selectedCallback.processStatus }}</UBadge>
                 </div>
-                <div class="p-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div v-for="field in [
-                    { label: $t('admin.paymentDetail.providerRef'), value: selectedCallback.providerReference ?? '—' },
-                    { label: $t('admin.paymentDetail.providerTxn'), value: selectedCallback.providerTxnId ?? '—' },
-                    { label: $t('admin.paymentDetail.signatureValid'), value: selectedCallback.signatureValid ? '✓ Valid' : '✗ Invalid' },
-                    { label: $t('admin.paymentDetail.processStatus'), value: selectedCallback.processStatus },
-                    { label: $t('admin.paymentDetail.receivedAt'), value: fmtDate(selectedCallback.receivedAt) },
-                  ]" :key="field.label" class="flex flex-col gap-0.5">
-                    <span class="text-xs text-gray-500 dark:text-neutral-400">{{ field.label }}</span>
-                    <span class="font-mono text-sm text-gray-700 dark:text-neutral-200">{{ field.value }}</span>
+                <div class="grid grid-cols-1 lg:grid-cols-2">
+                  <div class="border-b lg:border-b-0 lg:border-r border-gray-100 dark:border-neutral-800">
+                    <div class="px-4 py-1.5 border-b border-gray-100 dark:border-neutral-800">
+                      <span class="text-[11px] font-semibold uppercase tracking-wide text-purple-600 dark:text-purple-400">↓ Callback Received (inbound)</span>
+                    </div>
+                    <div class="p-3 flex flex-col gap-3">
+                      <div>
+                        <p class="text-xs font-semibold text-gray-500 dark:text-neutral-400 mb-1">Headers</p>
+                        <pre class="font-mono text-xs text-gray-700 dark:text-neutral-300 bg-gray-50 dark:bg-neutral-900 border border-gray-200 dark:border-neutral-700 rounded px-3 py-2 overflow-auto max-h-40 whitespace-pre-wrap">{{ fmtJson(selectedCallback.headers) }}</pre>
+                      </div>
+                      <div>
+                        <p class="text-xs font-semibold text-gray-500 dark:text-neutral-400 mb-1">Body</p>
+                        <pre class="font-mono text-xs text-gray-700 dark:text-neutral-300 bg-gray-50 dark:bg-neutral-900 border border-gray-200 dark:border-neutral-700 rounded px-3 py-2 overflow-auto max-h-48 whitespace-pre-wrap">{{ fmtJson(selectedCallback.body) }}</pre>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="p-4 flex flex-col gap-2">
+                    <p class="text-xs font-semibold text-gray-500 dark:text-neutral-400 mb-1">References</p>
+                    <div v-for="field in [
+                      { label: 'Provider Ref', value: selectedCallback.providerReference ?? '—' },
+                      { label: 'Provider Txn ID', value: selectedCallback.providerTxnId ?? '—' },
+                      { label: 'Received At', value: selectedCallback.receivedAt ? fmtDate(selectedCallback.receivedAt) : '—' },
+                      { label: 'Processed At', value: selectedCallback.processedAt ? fmtDate(selectedCallback.processedAt) : '—' },
+                    ]" :key="field.label" class="flex flex-col gap-0.5">
+                      <span class="text-xs text-gray-500 dark:text-neutral-400">{{ field.label }}</span>
+                      <span class="font-mono text-sm text-gray-700 dark:text-neutral-200">{{ field.value }}</span>
+                    </div>
                   </div>
                 </div>
               </div>
+
 
               <!-- Webhook Delivery detail -->
               <div v-if="selectedWebhookDelivery" class="rounded-lg border border-gray-200 dark:border-neutral-700 overflow-hidden">
@@ -478,16 +519,45 @@ function selectEvent(id: string) { selectedEventId.value = selectedEventId.value
 const QR_EVENTS = new Set(['PROVIDER_ACCEPTED', 'AWAITING_CUSTOMER'])
 const selectedEventShowsQR = computed(() => selectedEvent.value && QR_EVENTS.has(selectedEvent.value.type))
 
-// Match selected event → providerAttempt
+// Match selected event → providerAttempt (context-aware per flow)
 const selectedAttempt = computed(() => {
-  if (!selectedEvent.value) return null
+  if (!selectedEvent.value || !payment.value) return null
   const attempts: any[] = payment.value?.providerAttempts ?? []
   const t = selectedEvent.value.type
+  const isSlipBased = payment.value.paymentMethodType === 'BANK_TRANSFER_SLIP'
+
+  // QR creation step — SCB uses CREATE_QR, THAI_QR uses CREATE_PAYMENT
   if (['PROVIDER_REQUESTED', 'PROVIDER_ACCEPTED'].includes(t))
-    return attempts.find(a => a.type === 'CREATE_QR') ?? null
-  if (['PAYMENT_SUCCEEDED', 'PAYMENT_FAILED', 'PROCESSING'].includes(t))
+    return attempts.find(a => ['CREATE_QR', 'CREATE_PAYMENT'].includes(a.type)) ?? null
+
+  // Slip events — always show the VERIFY_SLIP attempt
+  if (['SLIP_SUBMITTED', 'SLIP_VERIFIED', 'SLIP_REJECTED'].includes(t))
+    return attempts.find(a => a.type === 'VERIFY_SLIP') ?? null
+
+  // Payment outcome — SCB shows INQUIRY, THAI_QR slip shows VERIFY_SLIP
+  if (['PAYMENT_SUCCEEDED', 'PAYMENT_FAILED', 'PROCESSING'].includes(t)) {
+    if (isSlipBased) return attempts.find(a => a.type === 'VERIFY_SLIP') ?? null
     return attempts.find(a => a.type === 'INQUIRY') ?? null
+  }
   return null
+})
+
+// True when the attempt is a local operation (no external API call)
+const isLocalAttempt = computed(() => selectedAttempt.value?.type === 'CREATE_PAYMENT')
+
+// Human-readable label for the attempt panel header
+const attemptTypeLabel = computed(() => {
+  const type = selectedAttempt.value?.type
+  const pc   = selectedAttempt.value?.providerCode ?? payment.value?.providerCode ?? ''
+  const labels: Record<string, string> = {
+    CREATE_QR:      `QR Creation — ${pc} API`,
+    CREATE_PAYMENT: 'QR Generated Locally (PayIQ Engine)',
+    VERIFY_SLIP:    `Slip Verification — ${pc}`,
+    INQUIRY:        `Payment Inquiry — ${pc} API`,
+    REFUND:         `Refund — ${pc}`,
+    CANCEL:         `Cancel — ${pc}`,
+  }
+  return type ? (labels[type] ?? type) : ''
 })
 
 // Match selected event → providerCallback
@@ -587,9 +657,10 @@ const TIMELINE_COLORS: Record<string, string> = {
 }
 function timelineColor(toStatus?: string, eventType?: string): string {
   if (toStatus && TIMELINE_COLORS[toStatus]) return TIMELINE_COLORS[toStatus]
-  if (eventType?.includes("SUCCEEDED") || eventType?.includes("COMPLETED")) return "success"
-  if (eventType?.includes("FAILED") || eventType?.includes("ERROR") || eventType?.includes("EXPIRED") || eventType?.includes("CANCELLED") || eventType?.includes("REVERSED")) return "error"
+  if (eventType?.includes("SUCCEEDED") || eventType?.includes("COMPLETED") || eventType === "SLIP_VERIFIED") return "success"
+  if (eventType?.includes("FAILED") || eventType?.includes("ERROR") || eventType?.includes("EXPIRED") || eventType?.includes("CANCELLED") || eventType?.includes("REVERSED") || eventType === "SLIP_REJECTED") return "error"
   if (eventType?.includes("REFUNDED")) return "warning"
+  if (eventType === "SLIP_SUBMITTED") return "info"
   return "neutral"
 }
 
@@ -620,6 +691,9 @@ function eventIcon(type: string): string {
     WEBHOOK_QUEUED: "lucide-list-end",
     WEBHOOK_DELIVERED: "lucide-square-check-big",
     WEBHOOK_FAILED: "i-lucide-webhook",
+    SLIP_SUBMITTED: "i-lucide-upload",
+    SLIP_VERIFIED: "i-lucide-shield-check",
+    SLIP_REJECTED: "i-lucide-shield-x",
     ERROR: "lucide-x",
   }
   return icons[type] ?? "lucide-circle-question-mark  "

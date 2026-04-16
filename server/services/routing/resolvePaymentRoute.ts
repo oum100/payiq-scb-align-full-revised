@@ -3,7 +3,7 @@ import { AppError } from "~~/server/lib/errors"
 
 export async function resolvePaymentRoute(params: {
   tenantId: string
-  paymentMethodType: "PROMPTPAY_QR"
+  paymentMethodType: "PROMPTPAY_QR" | "BANK_TRANSFER_SLIP" | "BILL_PAYMENT"
   currency: "THB"
   environment?: "TEST" | "LIVE"
 }) {

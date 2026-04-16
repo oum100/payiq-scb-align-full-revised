@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-gray-50 dark:bg-neutral-950 p-6">
+  <div class="min-h-screen bg-slate-100 dark:bg-neutral-950 p-6">
     <!-- Page header -->
     <div class="flex items-center justify-between mb-6">
       <h1 class="text-2xl font-semibold tracking-tight text-gray-900 dark:text-white">Admin Users</h1>

@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-gray-50 dark:bg-neutral-950 flex items-center justify-center p-6 transition-colors">
+  <div class="min-h-screen bg-slate-100 dark:bg-neutral-950 flex items-center justify-center p-6 transition-colors">
     <div class="w-full max-w-sm text-center">
       <div class="inline-flex items-center gap-1 text-2xl font-bold tracking-tight mb-10">
         <span class="text-gray-900 dark:text-white">pay</span><span class="text-amber-500">IQ</span>

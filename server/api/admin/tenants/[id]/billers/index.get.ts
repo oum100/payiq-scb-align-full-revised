@@ -6,9 +6,9 @@ export default defineEventHandler(async (event) => {
     where: { tenantId },
     orderBy: { createdAt: 'asc' },
     select: {
-      id: true, code: true, displayName: true, providerCode: true,
+      id: true, code: true, displayName: true,
       environment: true, billerId: true, merchantIdAtProvider: true,
-      status: true, priority: true, createdAt: true,
+      status: true, priority: true, createdAt: true, config: true,
       _count: { select: { paymentRoutes: true } },
     },
   })

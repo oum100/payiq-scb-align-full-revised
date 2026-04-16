@@ -1,17 +1,17 @@
 <template>
-  <div class="min-h-screen bg-gray-50 dark:bg-neutral-950 p-6">
+  <div class="min-h-screen bg-slate-100 dark:bg-neutral-950 p-6">
     <!-- Breadcrumb + header -->
     <div class="flex items-start justify-between mb-6">
       <div>
-        <div class="flex items-center gap-2 mb-1.5">
-          <NuxtLink
-            to="/admin/tenants"
-            class="text-xs text-amber-500 hover:text-amber-400 hover:underline transition-colors"
-          >Tenants</NuxtLink>
-          <span class="text-xs text-gray-400 dark:text-neutral-600">›</span>
-          <span class="text-xs text-gray-500 dark:text-neutral-400">{{ tenant?.name ?? '…' }}</span>
-          <span class="text-xs text-gray-400 dark:text-neutral-600">›</span>
-          <span class="text-xs text-gray-500 dark:text-neutral-400">Users</span>
+        <div class="flex items-center gap-2 mb-1">
+          <UButton icon="i-lucide-arrow-left" color="neutral" variant="ghost" size="sm" :to="`/admin/tenants/${tenantId}`" />
+          <div class="flex items-center gap-1.5 text-sm text-gray-500 dark:text-neutral-400">
+            <NuxtLink :to="`/admin/tenants/${tenantId}`" class="hover:text-amber-500 transition-colors">{{ tenantName }}</NuxtLink>
+            <span>/</span>
+            <span class="text-gray-700 dark:text-neutral-300">{{ tenant?.name ?? '…' }}</span>
+            <span>/</span>
+            <span class="text-gray-900 dark:text-white font-medium">Users</span>
+          </div>
         </div>
         <h1 class="text-2xl font-semibold tracking-tight text-gray-900 dark:text-white">Portal Users</h1>
         <p class="text-sm text-gray-500 dark:text-neutral-400 mt-1">

@@ -7,6 +7,7 @@ export default defineEventHandler(async (event) => {
     orderBy: { createdAt: 'asc' },
     include: {
       billerProfile: { select: { id: true, code: true, displayName: true } },
+      provider: { select: { id: true, code: true, displayName: true, type: true } },
     },
   })
   return { items }

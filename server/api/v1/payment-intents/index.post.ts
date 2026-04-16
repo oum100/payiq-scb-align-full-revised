@@ -11,7 +11,12 @@ const schema = z.object({
   merchantReference: z.string().optional(),
   amount: z.string().regex(/^\d+(\.\d{1,2})?$/),
   currency: z.literal("THB").default("THB"),
-  paymentMethodType: z.literal("PROMPTPAY_QR"),
+  paymentMethodType: z.union([
+    z.literal("PROMPTPAY_QR"),
+    z.literal("BANK_TRANSFER_SLIP"),
+    z.literal("BILL_PAYMENT"),
+    z.literal("CASH"),
+  ]),
   customerName: z.string().optional(),
   customerEmail: z.string().optional(),
   customerPhone: z.string().optional(),

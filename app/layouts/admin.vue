@@ -3,7 +3,7 @@ import type { NavigationMenuItem, DropdownMenuItem } from '@nuxt/ui'
 import { useLocalStore } from '~~/stores/local' // เพิ่มบรรทัดนี้
 
 const { admin, fetchAdmin, logout } = useAdmin()
-const { $t,$getLocale, $switchLocale, $getLocales } = useI18n()
+const { $t, $getLocale, $switchLocale, $getLocales } = useI18n()
 const colorMode = useColorMode()
 
 await fetchAdmin()
@@ -21,13 +21,28 @@ const availableLocales = computed(() =>
 
 // Multi-language: Current Language with Pinia Store
 const localStore = useLocalStore()
+
+// 1. Sync ภาษาจาก Store เมื่อตอนเริ่มต้น (Initial load)
+onMounted(() => {
+  if (localStore.currentLocale) {
+    localStore.setLanguage(localStore.currentLocale) // Set language in Pinia store
+    $switchLocale(localStore.currentLocale) // Set language in i18n
+  }
+})
+
+// 2. Watch เมื่อมีการเปลี่ยนค่าใน Store ให้สั่งเปลี่ยนภาษา i18n ทันที
+watch(() => localStore.currentLocale, (newLocale) => {
+  localStore.setLanguage(newLocale)
+})
+
 const currentLocale = computed({
-  get: () => localStore.currentLocale || $getLocale(), // ดึงค่าจาก Pinia store ก่อน ถ้าไม่มีค่อยใช้ค่าเริ่มต้นจาก i18n
+  get: () => localStore.currentLocale,
   set: (val: string) => {
-    $switchLocale(val)
-    localStore.setLanguage(val) // บันทึกการตั้งค่าภาษาใน Pinia store
+    localStore.setLanguage(val)
+    // ไม่ต้องสั่ง $switchLocale ตรงนี้แล้ว เพราะ watch จะจัดการให้เอง
   },
 })
+
 
 //Theme toggle
 function toggleTheme() {
@@ -68,8 +83,6 @@ function getNavItems(state: 'collapsed' | 'expanded'): NavigationMenuItem[] {
       defaultOpen: true,
       children: [
         { label: $t('admin.nav.tenants') as string, icon: 'i-lucide-building-2', to: '/admin/tenants' },
-        { label: $t('admin.nav.merchants') as string, icon: 'i-lucide-users', to: '/admin/merchants' },
-        { label: $t('admin.nav.apiKeys') as string, icon: 'i-lucide-key', to: '/admin/api-keys' },
         { label: $t('admin.nav.adminUsers') as string, icon: 'i-lucide-shield-check', to: '/admin/users' },
       ],
     },
@@ -115,7 +128,7 @@ const userItems = computed<DropdownMenuItem[][]>(() => [
 </script>
 
 <template>
-  <div class="flex min-h-screen font-sans bg-gray-50 dark:bg-neutral-950">
+  <div class="flex min-h-screen font-sans bg-slate-100 dark:bg-neutral-950">
     <USidebar v-model:open="open" collapsible="icon" :ui="{
       container: 'h-full',
       inner: 'divide-transparent',
@@ -169,7 +182,8 @@ const userItems = computed<DropdownMenuItem[][]>(() => [
                        bg-lime-500/10 text-lime-600 dark:text-lime-400 border border-lime-500/20">
             SANDBOX
           </span>
-          <USelect v-model="currentLocale" :items="availableLocales" value-key="value" label-key="label" size="sm" class="w-24" />
+          <USelect v-model="currentLocale" :items="availableLocales" value-key="value" label-key="label" size="sm"
+            class="w-24" />
           <UButton :icon="colorMode.value === 'dark' ? 'i-lucide-sun' : 'i-lucide-moon'" color="neutral" variant="ghost"
             size="sm" @click="toggleTheme" />
         </div>
@@ -181,4 +195,5 @@ const userItems = computed<DropdownMenuItem[][]>(() => [
       </main>
     </div>
   </div>
+  <UNotifications />
 </template>

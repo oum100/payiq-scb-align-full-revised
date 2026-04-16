@@ -72,6 +72,10 @@ export default defineNuxtConfig({
     webhookRateLimit: Number(process.env.WEBHOOK_RATE_LIMIT || 100),
   },
 
+  build: {
+    transpile: ['chart.js', 'vue-chartjs'],
+  },
+
   nitro: {
     externals: { inline: ["prom-client"] },
   },

@@ -54,11 +54,11 @@ async function assertWebhookRateLimit(event: any, provider: string) {
     throw error;
   }
 }
-function normalizeProviderCode(provider: string) {
+function normalizeProviderCode(provider: string): string {
   const normalized = provider.toUpperCase();
   if (normalized !== "SCB" && normalized !== "KBANK")
     throw new Error("unsupported provider");
-  return normalized as "SCB" | "KBANK";
+  return normalized;
 }
 
 export default defineEventHandler(async (event) => {

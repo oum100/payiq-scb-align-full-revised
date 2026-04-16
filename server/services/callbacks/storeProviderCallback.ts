@@ -2,10 +2,8 @@ import { nanoid } from "nanoid";
 import { prisma } from "~~/server/lib/prisma";
 import { callbackQueue } from "~~/server/lib/bullmq";
 import { sha256 } from "~~/server/lib/crypto";
-import type { ProviderCode } from "@prisma/client";
-
 export async function storeProviderCallback(params: {
-  providerCode: ProviderCode;
+  providerCode: string;
   rawBody: string;
   body: unknown;
   headers: Record<string, unknown>;

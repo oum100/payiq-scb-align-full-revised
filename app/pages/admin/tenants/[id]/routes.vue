@@ -1,13 +1,16 @@
 <template>
-  <div class="min-h-screen bg-gray-50 dark:bg-neutral-950 p-6">
+  <div class="min-h-screen bg-slate-100 dark:bg-neutral-950 p-6">
     <div class="flex items-start justify-between mb-6">
       <div>
-        <div class="flex items-center gap-1.5 text-sm text-gray-500 dark:text-neutral-400 mb-1">
-          <NuxtLink to="/admin/tenants" class="hover:text-amber-500 transition-colors">Tenants</NuxtLink>
-          <span>/</span>
-          <span class="text-gray-700 dark:text-neutral-300">{{ tenantName }}</span>
-          <span>/</span>
-          <span class="text-gray-900 dark:text-white font-medium">Routes</span>
+        <div class="flex items-center gap-2 mb-1">
+          <UButton icon="i-lucide-arrow-left" color="neutral" variant="ghost" size="sm" :to="`/admin/tenants/${tenantId}`" />
+          <div class="flex items-center gap-1.5 text-sm text-gray-500 dark:text-neutral-400">
+            <NuxtLink :to="`/admin/tenants/${tenantId}`" class="hover:text-amber-500 transition-colors">{{ tenantName }}</NuxtLink>
+            <span>/</span>
+            <span class="text-gray-700 dark:text-neutral-300">{{ tenantName }}</span>
+            <span>/</span>
+            <span class="text-gray-900 dark:text-white font-medium">Routes</span>
+          </div>
         </div>
         <h1 class="text-2xl font-semibold tracking-tight text-gray-900 dark:text-white">Payment Routes</h1>
         <p class="text-sm text-gray-500 dark:text-neutral-400 mt-1">{{ items.length }} route{{ items.length !== 1 ? 's' : '' }} configured</p>
@@ -21,34 +24,26 @@
         <table class="w-full border-collapse">
           <thead>
             <tr class="border-b border-gray-200 dark:border-neutral-800">
-              <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-neutral-200">Code</th>
-              <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-neutral-200">Method</th>
-              <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-neutral-200">Provider</th>
-              <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-neutral-200">Env</th>
-              <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-neutral-200">Biller</th>
-              <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-neutral-200">Currency</th>
-              <th class="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-neutral-200">Default</th>
-              <th class="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-neutral-200">Priority</th>
-              <th class="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-neutral-200">Status</th>
-              <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-neutral-200">Created</th>
-              <th class="px-4 py-3"></th>
+              <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-neutral-400">Code</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-neutral-400">Method</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-neutral-400">Provider</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-neutral-400">Biller</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-neutral-400">Currency</th>
+              <th class="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-neutral-400">Default</th>
+              <th class="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-neutral-400">Priority</th>
+              <th class="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-neutral-400">Status</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-neutral-400">Created</th>
+              <th class="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-neutral-400">Env</th>
+              <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-neutral-400">Actions</th>
             </tr>
           </thead>
           <tbody>
             <tr v-for="r in items" :key="r.id"
               class="border-b border-gray-100 dark:border-neutral-800 last:border-0 hover:bg-gray-50 dark:hover:bg-neutral-800/50 transition-colors">
-              <td class="px-4 py-3 font-mono text-xs text-gray-500 dark:text-neutral-400">{{ r.code }}</td>
+              <td class="px-4 py-3 text-sm text-gray-800 dark:text-neutral-200">{{ r.code }}</td>
               <td class="px-4 py-3 text-sm text-gray-700 dark:text-neutral-300">{{ r.paymentMethodType }}</td>
-              <td class="px-4 py-3">
-                <UBadge :label="r.providerCode" color="info" variant="soft" size="sm" />
-              </td>
-              <td class="px-4 py-3">
-                <UBadge :label="r.environment" :color="r.environment === 'LIVE' ? 'success' : 'warning'" variant="soft" size="sm" />
-              </td>
-              <td class="px-4 py-3">
-                <div class="text-sm text-gray-700 dark:text-neutral-300">{{ r.billerProfile?.displayName ?? '—' }}</div>
-                <div class="font-mono text-xs text-gray-400 dark:text-neutral-500">{{ r.billerProfile?.code }}</div>
-              </td>
+              <td class="px-4 py-3 text-sm text-gray-700 dark:text-neutral-300">{{ r.providerCode }}</td>
+              <td class="px-4 py-3 text-sm text-gray-700 dark:text-neutral-300">{{ r.billerProfile?.displayName ?? '—' }}</td>
               <td class="px-4 py-3 text-sm text-gray-700 dark:text-neutral-300">{{ r.currency }}</td>
               <td class="px-4 py-3 text-center">
                 <UBadge v-if="r.isDefault" label="DEFAULT" color="warning" variant="soft" size="sm" />
@@ -58,9 +53,12 @@
               <td class="px-4 py-3 text-center">
                 <UBadge :label="r.status" :color="r.status === 'ACTIVE' ? 'success' : 'neutral'" variant="soft" size="sm" />
               </td>
-              <td class="px-4 py-3 text-xs text-gray-500 dark:text-neutral-400">{{ fmtDate(r.createdAt) }}</td>
-              <td class="px-4 py-3">
-                <UButton icon="i-heroicons-pencil-square" color="neutral" variant="ghost" size="xs" @click="openEdit(r)" />
+              <td class="px-4 py-3 text-sm text-gray-500 dark:text-neutral-400">{{ fmtDate(r.createdAt) }}</td>
+              <td class="px-4 py-3 text-center">
+                <UBadge :label="r.environment" :color="r.environment === 'LIVE' ? 'success' : 'warning'" variant="soft" size="sm" />
+              </td>
+              <td class="px-4 py-3 text-right">
+                <UButton icon="i-heroicons-pencil-square" color="neutral" variant="ghost" size="sm" @click="openEdit(r)" />
               </td>
             </tr>
             <tr v-if="!items.length">

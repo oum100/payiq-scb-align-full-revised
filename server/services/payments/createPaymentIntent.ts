@@ -128,15 +128,68 @@ export async function createPaymentIntent(
     expiresAt: Date | null;
   } | null = null;
 
+  // ── CASH: no provider, no route needed ───────────────────────────────────
+  if (input.paymentMethodType === "CASH") {
+    const publicId = `piq_${nanoid(16)}`;
+
+    const cashIntent = await prisma.paymentIntent.create({
+      data: {
+        tenantId: auth.tenantId,
+        merchantAccountId: merchant.id,
+        publicId,
+        merchantOrderId: input.merchantOrderId ?? null,
+        merchantReference: input.merchantReference ?? null,
+        idempotencyKeyValue: idemKey,
+        paymentMethodType: "CASH",
+        environment: merchant.environment,
+        currency: "THB",
+        amount: input.amount,
+        feeAmount: "0",
+        netAmount: input.amount,
+        status: "CREATED",
+        customerName: input.customerName ?? null,
+        customerEmail: input.customerEmail ?? null,
+        customerPhone: input.customerPhone ?? null,
+        description: input.description ?? null,
+        ...(input.metadata !== undefined ? { metadata: input.metadata as never } : {}),
+        // no expiresAt — IoT/KIOSK confirm when cash is received, no timeout
+        events: {
+          create: [{ type: "PAYMENT_CREATED", toStatus: "CREATED", summary: "Cash payment intent created" }],
+        },
+      },
+    });
+
+    const cashTransition = await applyPaymentTransition({
+      paymentIntentId: cashIntent.id,
+      toStatus: "AWAITING_CUSTOMER",
+      eventType: "PROVIDER_ACCEPTED",
+      summary: "Cash payment awaiting physical collection",
+    });
+
+    const cashResponse = toResponse(cashTransition.payment);
+
+    await completeIdempotency({
+      tenantId: auth.tenantId,
+      key: idemKey,
+      responseStatusCode: 200,
+      responseBody: cashResponse,
+      resourceType: "PaymentIntent",
+      resourceId: cashIntent.id,
+    });
+
+    return cashResponse;
+  }
+  // ─────────────────────────────────────────────────────────────────────────
+
   try {
     const route = await resolvePaymentRoute({
       tenantId: auth.tenantId,
-      paymentMethodType: "PROMPTPAY_QR",
+      paymentMethodType: input.paymentMethodType,
       currency: "THB",
       environment: merchant.environment,
     });
 
-    const publicId = `piq_${nanoid(24)}`;
+    const publicId = `piq_${nanoid(16)}`;
     const callbackUrl = buildProviderCallbackUrl(route.providerCode);
     const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
 
@@ -150,7 +203,7 @@ export async function createPaymentIntent(
         merchantOrderId: input.merchantOrderId ?? null,
         merchantReference: input.merchantReference ?? null,
         idempotencyKeyValue: idemKey,
-        paymentMethodType: "PROMPTPAY_QR",
+        paymentMethodType: input.paymentMethodType,
         providerCode: route.providerCode,
         environment: merchant.environment,
         currency: "THB",

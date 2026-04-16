@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-gray-50 dark:bg-neutral-950 flex flex-col items-center justify-center p-6 transition-colors">
+  <div class="min-h-screen bg-slate-100 dark:bg-neutral-950 flex flex-col items-center justify-center p-6 transition-colors">
     <div class="w-full max-w-sm">
       <UCard class="shadow-xl h-100">
         <!-- Logo -->

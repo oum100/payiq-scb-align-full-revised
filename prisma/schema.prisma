@@ -32,11 +32,12 @@ enum EnvironmentMode {
   LIVE
 }
 
-enum ProviderCode {
-  SCB
-  KBANK
-  PROMPTPAY
-  INTERNAL
+enum ProviderType {
+  BANK_API          // Direct bank API: SCB Open API, KBank Easy API, Bay
+  PAYMENT_GATEWAY   // Third-party payment gateway: Omise, 2C2P, GBPrimePay
+  SLIP_VERIFY       // Slip image verification: EasySlip, SlipOK
+  E_WALLET          // Wallet API: TrueMoney, Rabbit LINE Pay
+  SANDBOX           // Simulated testing, no real payment
 }
 
 enum BillerStatus {
@@ -57,6 +58,8 @@ enum PaymentMethodType {
   CARD
   BANK_TRANSFER
   E_WALLET
+  BANK_TRANSFER_SLIP
+  CASH
 }
 
 enum CurrencyCode {
@@ -95,6 +98,10 @@ enum PaymentEventType {
   WEBHOOK_QUEUED
   WEBHOOK_DELIVERED
   WEBHOOK_FAILED
+  CASH_COLLECTED
+  SLIP_SUBMITTED
+  SLIP_VERIFIED
+  SLIP_REJECTED
   RECONCILIATION_REQUESTED
   RECONCILIATION_MATCHED
   RECONCILIATION_MISMATCH
@@ -109,6 +116,7 @@ enum ProviderAttemptType {
   REFUND
   CALLBACK_PROCESS
   TOKEN_REFRESH
+  VERIFY_SLIP
 }
 
 enum ProviderAttemptStatus {
@@ -185,6 +193,33 @@ enum ArchiveKind {
 }
 
 
+model Provider {
+  id          String       @id @default(cuid())
+  code        String       @unique   // e.g. "SCB", "KBANK", "OMISE"
+  displayName String
+  type        ProviderType
+  isActive    Boolean      @default(true)
+  sortOrder   Int          @default(100)
+
+  // Health check config (editable per provider)
+  healthMethod         String  @default("disabled") // "ping" | "activity" | "disabled"
+  pingUrl              String?
+  pingTimeoutMs        Int?
+  pingExpectStatus     Int?
+  activitySource       String? // "attempt" | "callback" | "both"
+  activityWarnMinutes  Int?
+  activityStaleMinutes Int?
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  paymentRoutes     PaymentRoute[]
+  providerAttempts  ProviderAttempt[]
+  providerCallbacks ProviderCallback[]
+
+  @@map("providers")
+}
+
 model Tenant {
   id               String             @id @default(cuid())
   code             String             @unique
@@ -195,15 +230,16 @@ model Tenant {
   createdAt        DateTime           @default(now())
   updatedAt        DateTime           @updatedAt
 
-  merchants        MerchantAccount[]
-  billerProfiles   BillerProfile[]
-  paymentRoutes    PaymentRoute[]
-  paymentIntents   PaymentIntent[]
-  webhookEndpoints WebhookEndpoint[]
-  apiKeys          ApiKey[]
-  auditLogs        AuditLog[]
-  idempotencyKeys  IdempotencyKey[]
-  tenantUsers      TenantUser[]
+  merchants                MerchantAccount[]
+  billerProfiles           BillerProfile[]
+  paymentRoutes            PaymentRoute[]
+  paymentIntents           PaymentIntent[]
+  webhookEndpoints         WebhookEndpoint[]
+  apiKeys                  ApiKey[]
+  auditLogs                AuditLog[]
+  idempotencyKeys          IdempotencyKey[]
+  tenantUsers              TenantUser[]
+  merchantRouteAssignments MerchantRouteAssignment[]
 
   @@index([status])
   @@map("tenants")
@@ -222,10 +258,11 @@ model MerchantAccount {
   createdAt        DateTime          @default(now())
   updatedAt        DateTime          @updatedAt
 
-  tenant           Tenant            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  paymentIntents   PaymentIntent[]
-  webhookEndpoints WebhookEndpoint[]
-  apiKeys          ApiKey[]
+  tenant                   Tenant                    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  paymentIntents           PaymentIntent[]
+  webhookEndpoints         WebhookEndpoint[]
+  apiKeys                  ApiKey[]
+  merchantRouteAssignments MerchantRouteAssignment[]
 
   @@unique([tenantId, code])
   @@index([tenantId, status])
@@ -269,7 +306,6 @@ model BillerProfile {
   tenantId              String
   code                  String
   displayName           String
-  providerCode          ProviderCode
   environment           EnvironmentMode        @default(TEST)
   billerId              String?
   merchantIdAtProvider  String?
@@ -292,7 +328,7 @@ model BillerProfile {
   reconciliationRecords ReconciliationRecord[]
 
   @@unique([tenantId, code])
-  @@index([tenantId, providerCode, environment, status])
+  @@index([tenantId, environment, status])
   @@index([tenantId, billerId])
   @@map("biller_profiles")
 }
@@ -302,7 +338,7 @@ model PaymentRoute {
   tenantId          String
   code              String
   paymentMethodType PaymentMethodType
-  providerCode      ProviderCode
+  providerId        String
   environment       EnvironmentMode   @default(TEST)
   billerProfileId   String
   currency          CurrencyCode      @default(THB)
@@ -314,15 +350,38 @@ model PaymentRoute {
   createdAt         DateTime          @default(now())
   updatedAt         DateTime          @updatedAt
 
-  tenant            Tenant            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  billerProfile     BillerProfile     @relation(fields: [billerProfileId], references: [id], onDelete: Restrict)
-  paymentIntents    PaymentIntent[]
+  tenant                   Tenant                    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  billerProfile            BillerProfile             @relation(fields: [billerProfileId], references: [id], onDelete: Restrict)
+  provider                 Provider                  @relation(fields: [providerId], references: [id])
+  paymentIntents           PaymentIntent[]
+  merchantRouteAssignments MerchantRouteAssignment[]
 
   @@unique([tenantId, code])
   @@index([tenantId, paymentMethodType, currency, environment, status, priority])
-  @@index([tenantId, providerCode, environment, status])
+  @@index([tenantId, providerId, environment, status])
   @@index([billerProfileId])
   @@map("payment_routes")
+}
+
+model MerchantRouteAssignment {
+  id                String            @id @default(cuid())
+  tenantId          String
+  merchantAccountId String
+  paymentMethodType PaymentMethodType
+  paymentRouteId    String
+  priority          Int               @default(100)
+  isActive          Boolean           @default(true)
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+
+  tenant            Tenant            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  merchantAccount   MerchantAccount   @relation(fields: [merchantAccountId], references: [id], onDelete: Cascade)
+  paymentRoute      PaymentRoute      @relation(fields: [paymentRouteId], references: [id], onDelete: Cascade)
+
+  @@unique([merchantAccountId, paymentMethodType])
+  @@index([tenantId])
+  @@index([merchantAccountId])
+  @@map("merchant_route_assignments")
 }
 
 model PaymentIntent {
@@ -338,7 +397,7 @@ model PaymentIntent {
   idempotencyKeyValue   String?
 
   paymentMethodType     PaymentMethodType
-  providerCode          ProviderCode?
+  providerCode          String?
   environment           EnvironmentMode       @default(TEST)
   currency              CurrencyCode          @default(THB)
 
@@ -429,7 +488,7 @@ model ProviderAttempt {
   status             ProviderAttemptStatus @default(PENDING)
   requestId          String                @unique
   idempotencyKeySent String?
-  providerCode       ProviderCode
+  providerCode       String
   providerEndpoint   String?
   httpMethod         String?
   httpStatusCode     Int?
@@ -449,6 +508,7 @@ model ProviderAttempt {
 
   paymentIntent      PaymentIntent?        @relation(fields: [paymentIntentId], references: [id], onDelete: SetNull)
   billerProfile      BillerProfile         @relation(fields: [billerProfileId], references: [id], onDelete: Restrict)
+  provider           Provider              @relation(fields: [providerCode], references: [code])
   payloadArchives    PayloadArchive[]
 
   @@index([paymentIntentId, createdAt])
@@ -463,7 +523,7 @@ model ProviderCallback {
   id                 String                @id @default(cuid())
   paymentIntentId    String?
   billerProfileId    String?
-  providerCode       ProviderCode
+  providerCode       String
   callbackType       String?
   processStatus      CallbackProcessStatus @default(RECEIVED)
   providerReference  String?
@@ -486,6 +546,7 @@ model ProviderCallback {
 
   paymentIntent      PaymentIntent?        @relation(fields: [paymentIntentId], references: [id], onDelete: SetNull)
   billerProfile      BillerProfile?        @relation(fields: [billerProfileId], references: [id], onDelete: SetNull)
+  provider           Provider              @relation(fields: [providerCode], references: [code])
   payloadArchives    PayloadArchive[]
 
   @@unique([providerCode, dedupeKey])

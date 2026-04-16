@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-gray-50 dark:bg-neutral-950 flex items-center justify-center px-6">
+  <div class="min-h-screen bg-slate-100 dark:bg-neutral-950 flex items-center justify-center px-6">
     <div
       class="w-full max-w-sm bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-2xl py-11 px-9 text-center">
       <!-- Logo -->

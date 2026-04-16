@@ -55,11 +55,9 @@ export const useLocalStore = defineStore('local', {
     // ฟังก์ชันนี้จะถูกเรียกจาก Layout หรือ Pages
     setLanguage(newLocale: string) {
       this.currentLocale = newLocale
-      // เราจะไม่สั่งเปลี่ยนภาษา i18n ที่นี่ เพื่อป้องกัน Error 500 ฝั่ง Server
+      // console.log('Language set in Pinia store:', this.currentLocale) // Debug log
     },
   },
   // บันทึกลง localStorage อัตโนมัติในชื่อ 'payiq-local'
-  persist: {
-    key: 'payiq-local',
-  },
+  persist:true
 })

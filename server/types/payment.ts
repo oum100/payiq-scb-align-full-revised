@@ -3,7 +3,7 @@ export type CreatePaymentIntentInput = {
   merchantReference?: string;
   amount: string;
   currency?: "THB";
-  paymentMethodType: "PROMPTPAY_QR";
+  paymentMethodType: "PROMPTPAY_QR" | "BANK_TRANSFER_SLIP" | "BILL_PAYMENT" | "CASH";
   customerName?: string;
   customerEmail?: string;
   customerPhone?: string;

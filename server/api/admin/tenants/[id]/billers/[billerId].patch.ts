@@ -4,7 +4,7 @@ export default defineEventHandler(async (event) => {
   const tenantId = getRouterParam(event, 'id')!
   const billerId = getRouterParam(event, 'billerId')!
   const body = await readBody(event)
-  const { displayName, billerId: bId, merchantIdAtProvider, status, priority } = body
+  const { displayName, billerId: bId, merchantIdAtProvider, status, priority, config } = body
 
   const biller = await prisma.billerProfile.findFirst({ where: { id: billerId, tenantId } })
   if (!biller) throw createError({ statusCode: 404, message: 'Biller not found' })
@@ -17,6 +17,7 @@ export default defineEventHandler(async (event) => {
       ...(merchantIdAtProvider !== undefined && { merchantIdAtProvider: merchantIdAtProvider || null }),
       ...(status !== undefined && { status }),
       ...(priority !== undefined && { priority: Number(priority) }),
+      ...(config !== undefined && { config: config ?? null }),
     },
   })
   return updated

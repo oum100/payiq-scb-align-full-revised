@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-gray-50 dark:bg-neutral-950 p-6">
+  <div class="min-h-screen bg-slate-100 dark:bg-neutral-950 p-6">
     <!-- Page header -->
     <div class="mb-6">
       <h1 class="text-2xl font-semibold tracking-tight text-gray-900 dark:text-white">Merchants</h1>

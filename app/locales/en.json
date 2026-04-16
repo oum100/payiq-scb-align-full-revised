@@ -248,7 +248,7 @@
     },
     "webhook": {
       "shortTitle": "Webhooks",
-      "title": "รายการส่งแจ้ง Merchant System (Webhooks)",
+      "title": "Webhooks to Merchant System",
       "id": "ID",
       "eventType": "Event Type",
       "status": "Status",
