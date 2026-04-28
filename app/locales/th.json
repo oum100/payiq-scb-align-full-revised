@@ -87,6 +87,61 @@
       "webhooks": "Webhooks",
       "apiKeys": "API Keys"
     },
+    "payments": {
+      "title": "การชำระเงิน",
+      "search": "ค้นหา Public ID, รหัสคำสั่งซื้อ, ลูกค้า…",
+      "statusAll": "ทุกสถานะ",
+      "clear": "ล้างค่า",
+      "colStatus": "สถานะ",
+      "colAmount": "ยอด",
+      "colPublicId": "Public ID",
+      "colOrderId": "รหัสคำสั่งซื้อ",
+      "colMethod": "วิธีชำระ",
+      "colDate": "วันที่",
+      "loading": "กำลังโหลด…",
+      "empty": "ไม่พบรายการชำระเงิน"
+    },
+    "webhooks": {
+      "title": "Webhooks",
+      "statusAll": "ทุกสถานะ",
+      "colStatus": "สถานะ",
+      "colEvent": "Event",
+      "colPayment": "รายการชำระเงิน",
+      "colEndpoint": "ปลายทาง",
+      "colAttempts": "ครั้งที่",
+      "colDate": "วันที่",
+      "loading": "กำลังโหลด…",
+      "empty": "ไม่พบรายการส่ง Webhook"
+    },
+    "apiKeys": {
+      "title": "API Keys",
+      "createBtn": "สร้าง API Key",
+      "colName": "ชื่อ",
+      "colPrefix": "Key Prefix",
+      "colScopes": "สิทธิ์",
+      "colEnv": "Environment",
+      "colStatus": "สถานะ",
+      "colCreated": "สร้างเมื่อ",
+      "revokeBtn": "ยกเลิก",
+      "confirmRevoke": "ยืนยันการยกเลิก API Key \"{name}\"? ไม่สามารถย้อนกลับได้",
+      "loading": "กำลังโหลด…",
+      "empty": "ยังไม่มี API Key",
+      "createModal": {
+        "title": "สร้าง API Key ใหม่",
+        "nameLabel": "ชื่อ",
+        "namePlaceholder": "เช่น production-key",
+        "envLabel": "Environment",
+        "scopesLabel": "สิทธิ์การเข้าถึง",
+        "submitBtn": "สร้าง",
+        "cancelBtn": "ยกเลิก"
+      },
+      "keyCreated": {
+        "title": "API Key ถูกสร้างแล้ว",
+        "warning": "บันทึก key นี้ทันที — จะไม่สามารถดูได้อีก",
+        "copyBtn": "คัดลอก",
+        "doneBtn": "เสร็จสิ้น"
+      }
+    },
     "login": {
       "heading": "เข้าสู่ระบบ",
       "subtitle": "กรอกอีเมลเพื่อรับลิงก์เข้าสู่ระบบ",

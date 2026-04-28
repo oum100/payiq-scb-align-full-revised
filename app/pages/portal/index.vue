@@ -38,7 +38,7 @@
       </a>
     </div>
 
-    <!-- Recent payments placeholder -->
+    <!-- Recent payments -->
     <UCard>
       <template #header>
         <div class="flex items-center justify-between">
@@ -50,10 +50,26 @@
           </NuxtLink>
         </div>
       </template>
-      <div class="flex items-center justify-center py-10 text-sm text-gray-400 dark:text-neutral-500">
+      <div v-if="statsPending" class="py-10 text-center text-sm text-gray-400 dark:text-neutral-500">…</div>
+      <div v-else-if="!recentPayments?.length" class="flex items-center justify-center py-10 text-sm text-gray-400 dark:text-neutral-500">
         <div class="text-center">
           <UIcon name="i-heroicons-banknotes" class="w-10 h-10 mb-3 opacity-30 mx-auto" />
           <p>{{ $t('portal.dashboard.noPayments') }}</p>
+        </div>
+      </div>
+      <div v-else class="divide-y divide-gray-100 dark:divide-neutral-800">
+        <div
+          v-for="p in recentPayments"
+          :key="p.publicId"
+          class="flex items-center justify-between py-3 px-1"
+        >
+          <div class="flex items-center gap-3">
+            <UBadge :color="STATUS_COLORS[p.status] ?? 'neutral'" variant="soft" size="xs">{{ p.status }}</UBadge>
+            <span class="font-mono text-xs text-gray-400 dark:text-neutral-500">{{ p.publicId }}</span>
+          </div>
+          <span class="text-sm font-medium text-gray-700 dark:text-neutral-200 tabular-nums">
+            {{ Number(p.amount).toLocaleString('th-TH', { minimumFractionDigits: 2 }) }} {{ p.currency }}
+          </span>
         </div>
       </div>
     </UCard>
@@ -73,14 +89,31 @@ const today = computed(() => {
   })
 })
 
-// Placeholder stats — จะดึงจาก API จริงในขั้นต่อไป
-const pending = ref(false)
+const STATUS_COLORS: Record<string, string> = {
+  SUCCEEDED: 'emerald',
+  FAILED: 'red',
+  EXPIRED: 'neutral',
+  CANCELLED: 'neutral',
+  PROCESSING: 'blue',
+  AWAITING_CUSTOMER: 'amber',
+  PENDING_PROVIDER: 'amber',
+  REVERSED: 'purple',
+  REFUNDED: 'purple',
+}
+
+const { data: statsData, pending: statsPending } = await useFetch('/api/portal/payments/stats')
+const { data: paymentsData } = await useFetch('/api/portal/payments', { query: { pageSize: 5 } })
+
+const recentPayments = computed(() => paymentsData.value?.items ?? [])
+
 const summaryCards = computed(() => [
-  { key: 'total', label: $t('portal.dashboard.stats.total'), value: '—', color: 'text-gray-700 dark:text-neutral-200' },
-  { key: 'succeeded', label: $t('portal.dashboard.stats.succeeded'), value: '—', color: 'text-emerald-600 dark:text-emerald-400' },
-  { key: 'pending', label: $t('portal.dashboard.stats.pending'), value: '—', color: 'text-amber-600 dark:text-amber-400' },
-  { key: 'failed', label: $t('portal.dashboard.stats.failed'), value: '—', color: 'text-red-600 dark:text-red-400' },
+  { key: 'total',     label: $t('portal.dashboard.stats.total'),     value: statsData.value?.total?.toLocaleString()     ?? '—', color: 'text-gray-700 dark:text-neutral-200' },
+  { key: 'succeeded', label: $t('portal.dashboard.stats.succeeded'), value: statsData.value?.succeeded?.toLocaleString() ?? '—', color: 'text-emerald-600 dark:text-emerald-400' },
+  { key: 'pending',   label: $t('portal.dashboard.stats.pending'),   value: statsData.value?.pending?.toLocaleString()   ?? '—', color: 'text-amber-600 dark:text-amber-400' },
+  { key: 'failed',    label: $t('portal.dashboard.stats.failed'),    value: statsData.value?.failed?.toLocaleString()    ?? '—', color: 'text-red-600 dark:text-red-400' },
 ])
+
+const pending = statsPending
 </script>
 
 <style scoped>

@@ -87,6 +87,61 @@
       "webhooks": "Webhooks",
       "apiKeys": "API Keys"
     },
+    "payments": {
+      "title": "Payments",
+      "search": "Search ID, order ID, customer…",
+      "statusAll": "All statuses",
+      "clear": "Clear",
+      "colStatus": "Status",
+      "colAmount": "Amount",
+      "colPublicId": "Public ID",
+      "colOrderId": "Order ID",
+      "colMethod": "Method",
+      "colDate": "Date",
+      "loading": "Loading…",
+      "empty": "No payments found"
+    },
+    "webhooks": {
+      "title": "Webhooks",
+      "statusAll": "All statuses",
+      "colStatus": "Status",
+      "colEvent": "Event",
+      "colPayment": "Payment",
+      "colEndpoint": "Endpoint",
+      "colAttempts": "Attempts",
+      "colDate": "Date",
+      "loading": "Loading…",
+      "empty": "No webhook deliveries found"
+    },
+    "apiKeys": {
+      "title": "API Keys",
+      "createBtn": "Create API Key",
+      "colName": "Name",
+      "colPrefix": "Key Prefix",
+      "colScopes": "Scopes",
+      "colEnv": "Environment",
+      "colStatus": "Status",
+      "colCreated": "Created",
+      "revokeBtn": "Revoke",
+      "confirmRevoke": "Revoke API key \"{name}\"? This cannot be undone.",
+      "loading": "Loading…",
+      "empty": "No API keys yet",
+      "createModal": {
+        "title": "Create New API Key",
+        "nameLabel": "Name",
+        "namePlaceholder": "e.g. production-key",
+        "envLabel": "Environment",
+        "scopesLabel": "Scopes",
+        "submitBtn": "Create",
+        "cancelBtn": "Cancel"
+      },
+      "keyCreated": {
+        "title": "API Key Created",
+        "warning": "Save this key now — it will not be shown again.",
+        "copyBtn": "Copy",
+        "doneBtn": "Done"
+      }
+    },
     "login": {
       "heading": "Sign in",
       "subtitle": "Enter your email to receive a magic sign-in link",
